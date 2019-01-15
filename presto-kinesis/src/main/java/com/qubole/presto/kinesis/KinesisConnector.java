@@ -13,33 +13,31 @@
  */
 package com.qubole.presto.kinesis;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.facebook.presto.spi.connector.Connector;
 import com.facebook.presto.spi.connector.ConnectorMetadata;
-import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
-import com.facebook.presto.spi.connector.ConnectorSplitManager;
 import com.facebook.presto.spi.connector.ConnectorRecordSetProvider;
-
+import com.facebook.presto.spi.connector.ConnectorSplitManager;
+import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
 import com.facebook.presto.spi.session.PropertyMetadata;
 import com.facebook.presto.spi.transaction.IsolationLevel;
-import static com.facebook.presto.spi.transaction.IsolationLevel.READ_COMMITTED;
-import static com.facebook.presto.spi.transaction.IsolationLevel.checkConnectorSupports;
-
 import com.google.inject.Inject;
 import io.airlift.log.Logger;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.facebook.presto.spi.transaction.IsolationLevel.READ_COMMITTED;
+import static com.facebook.presto.spi.transaction.IsolationLevel.checkConnectorSupports;
+import static java.util.Objects.requireNonNull;
+
 /**
  * Kinesis connector implementation that includes a record set provider.
- *
+ * <p>
  * The first 3 methods are mandatory, the remaining Connector methods have defaults.
  * Here a ConnectorRecordSetProvider is applicable.
  */
 public class KinesisConnector
-            implements Connector
+        implements Connector
 {
     private static final Logger log = Logger.get(KinesisConnector.class);
 
@@ -57,9 +55,9 @@ public class KinesisConnector
             KinesisSplitManager splitManager,
             KinesisRecordSetProvider recordSetProvider)
     {
-        this.metadata = checkNotNull(metadata, "metadata is null");
-        this.splitManager = checkNotNull(splitManager, "splitManager is null");
-        this.recordSetProvider = checkNotNull(recordSetProvider, "recordSetProvider is null");
+        this.metadata = requireNonNull(metadata, "metadata is null");
+        this.splitManager = requireNonNull(splitManager, "splitManager is null");
+        this.recordSetProvider = requireNonNull(recordSetProvider, "recordSetProvider is null");
 
         this.propertyList = new ArrayList<PropertyMetadata<?>>();
         buildPropertyList();
@@ -103,7 +101,9 @@ public class KinesisConnector
         return this.propertyList;
     }
 
-    /** Build the list of session properties we support to supply them to Presto. */
+    /**
+     * Build the list of session properties we support to supply them to Presto.
+     */
     protected void buildPropertyList()
     {
         KinesisConnectorConfig cfg = this.metadata.getConnectorConfig();

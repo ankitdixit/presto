@@ -28,6 +28,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.inject.Inject;
 
 import javax.inject.Named;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -35,15 +36,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- *
  * Split data chunk from kinesis Stream to multiple small chunks for parallelization and distribution to multiple Presto workers.
  * By default, each shard of Kinesis Stream forms one Kinesis Split
- *
  */
 public class KinesisSplitManager
         implements ConnectorSplitManager
 {
-    /** Max age of the shard cache (currently 24 hours). */
+    /**
+     * Max age of the shard cache (currently 24 hours).
+     */
     public static final long MAX_CACHE_AGE_MILLIS = 24 * 3600 * 1000;
 
     private final String connectorId;
@@ -95,7 +96,7 @@ public class KinesisSplitManager
     }
 
     @Inject
-    public  KinesisSplitManager(@Named("connectorId") String connectorId,
+    public KinesisSplitManager(@Named("connectorId") String connectorId,
             KinesisHandleResolver handleResolver,
             KinesisClientProvider clientManager)
     {
@@ -128,7 +129,7 @@ public class KinesisSplitManager
 
     /**
      * Internal method to retrieve the stream description and get the shards from AWS.
-     *
+     * <p>
      * Gets from the internal cache unless not yet created or too old.
      *
      * @param streamName
@@ -163,7 +164,8 @@ public class KinesisSplitManager
                 else {
                     exclusiveStartShardId = null;
                 }
-            } while (exclusiveStartShardId != null);
+            }
+            while (exclusiveStartShardId != null);
 
             this.streamMap.put(streamName, desc);
         }

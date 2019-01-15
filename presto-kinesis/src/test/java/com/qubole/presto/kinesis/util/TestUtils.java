@@ -46,14 +46,16 @@ import static org.testng.Assert.assertTrue;
  */
 public class TestUtils
 {
-    /** Use this in POM to avoid providing credentials there (blank is OK for the value but can't be blank in POM). */
+    /**
+     * Use this in POM to avoid providing credentials there (blank is OK for the value but can't be blank in POM).
+     */
     public static final String NONE_KEY = "NONE";
 
     private TestUtils() {}
 
     /**
      * Create the plug in instance with other dependencies setup.
-     *
+     * <p>
      * This is done separately so that the injector can be pulled out to get at
      * underlying support classes to test them independently.
      *
@@ -67,7 +69,7 @@ public class TestUtils
 
     /**
      * Build a connector instance from the plug in, supplying the given properties.
-     *
+     * <p>
      * This can build a connector with the mock client which is normally done in testing.
      * The plug in is created first with createPluginInstance.
      *
@@ -95,7 +97,7 @@ public class TestUtils
 
     /**
      * Install the plugin into the given query runner, using the mock client and the given table descriptions.
-     *
+     * <p>
      * The plug in is returned so that the injector can be accessed and other setup items tested.
      *
      * @param queryRunner
@@ -122,7 +124,7 @@ public class TestUtils
 
     /**
      * Install the plug in into the given query runner, using normal setup but with the given table descriptions.
-     *
+     * <p>
      * Note that this uses the actual client and will incur charges from AWS when run.  Mainly for full
      * integration tests.
      *
@@ -139,9 +141,9 @@ public class TestUtils
         queryRunner.installPlugin(kinesisPlugin);
 
         Map<String, String> kinesisConfig = ImmutableMap.of(
-                    "kinesis.default-schema", "default",
-                    "kinesis.access-key", accessKey,
-                    "kinesis.secret-key", secretKey);
+                "kinesis.default-schema", "default",
+                "kinesis.access-key", accessKey,
+                "kinesis.secret-key", secretKey);
         queryRunner.createCatalog("kinesis", "kinesis", kinesisConfig);
     }
 

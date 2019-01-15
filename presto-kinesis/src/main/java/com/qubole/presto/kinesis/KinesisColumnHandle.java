@@ -13,20 +13,20 @@
  */
 package com.qubole.presto.kinesis;
 
-import static com.google.common.base.MoreObjects.toStringHelper;
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.ColumnHandle;
+import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.type.Type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
+
+import static com.google.common.base.MoreObjects.toStringHelper;
+import static java.util.Objects.requireNonNull;
 
 /**
  * Kinesis version of ConnectoColumnHandle. Keeps all the data of the columns of table formed from data received
  * from kinesis.
- *
  */
 public class KinesisColumnHandle
         implements ColumnHandle, Comparable<KinesisColumnHandle>
@@ -70,7 +70,7 @@ public class KinesisColumnHandle
     private final boolean internal;
 
     @JsonCreator
-    public  KinesisColumnHandle(
+    public KinesisColumnHandle(
             @JsonProperty("connectorId") String connectorId,
             @JsonProperty("ordinalPosition") int ordinalPosition,
             @JsonProperty("name") String name,
@@ -81,10 +81,10 @@ public class KinesisColumnHandle
             @JsonProperty("hidden") boolean hidden,
             @JsonProperty("internal") boolean internal)
     {
-        this.connectorId = checkNotNull(connectorId, "connectorId is null");
+        this.connectorId = requireNonNull(connectorId, "connectorId is null");
         this.ordinalPosition = ordinalPosition;
-        this.name = checkNotNull(name, "name is null");
-        this.type = checkNotNull(type, "type is null");
+        this.name = requireNonNull(name, "name is null");
+        this.type = requireNonNull(type, "type is null");
         this.mapping = mapping;
         this.dataFormat = dataFormat;
         this.formatHint = formatHint;

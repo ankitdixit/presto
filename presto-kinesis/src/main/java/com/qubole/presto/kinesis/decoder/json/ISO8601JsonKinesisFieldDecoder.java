@@ -13,24 +13,21 @@
  */
 package com.qubole.presto.kinesis.decoder.json;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import com.qubole.presto.kinesis.KinesisColumnHandle;
-import com.qubole.presto.kinesis.KinesisFieldValueProvider;
-import io.airlift.slice.Slice;
-
-import java.util.Locale;
-import java.util.Set;
-
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
-
 import com.facebook.presto.spi.PrestoException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import com.qubole.presto.kinesis.KinesisColumnHandle;
+import com.qubole.presto.kinesis.KinesisFieldValueProvider;
+import io.airlift.slice.Slice;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+
+import java.util.Locale;
+import java.util.Set;
 
 import static com.qubole.presto.kinesis.KinesisErrorCode.KINESIS_CONVERSION_NOT_SUPPORTED;
+import static java.util.Objects.requireNonNull;
 
 public class ISO8601JsonKinesisFieldDecoder
         extends JsonKinesisFieldDecoder
@@ -58,8 +55,8 @@ public class ISO8601JsonKinesisFieldDecoder
     @Override
     public KinesisFieldValueProvider decode(JsonNode value, KinesisColumnHandle columnHandle)
     {
-        checkNotNull(columnHandle, "columnHandle is null");
-        checkNotNull(value, "value is null");
+        requireNonNull(columnHandle, "columnHandle is null");
+        requireNonNull(value, "value is null");
 
         return new ISO8601JsonKinesisFieldValueProvider(value, columnHandle);
     }

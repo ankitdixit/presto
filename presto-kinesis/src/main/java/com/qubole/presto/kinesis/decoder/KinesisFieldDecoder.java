@@ -13,10 +13,10 @@
  */
 package com.qubole.presto.kinesis.decoder;
 
-import java.util.Set;
-
 import com.qubole.presto.kinesis.KinesisColumnHandle;
 import com.qubole.presto.kinesis.KinesisFieldValueProvider;
+
+import java.util.Set;
 
 public interface KinesisFieldDecoder<T>
 {

@@ -13,29 +13,26 @@
  */
 package com.qubole.presto.kinesis.decoder;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-import static java.lang.String.format;
-import io.airlift.log.Logger;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.weakref.jmx.internal.guava.base.Objects;
-
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
 import com.google.inject.Inject;
+import io.airlift.log.Logger;
+
+import javax.annotation.Nullable;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+
+import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkState;
+import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
 
 /**
- *
  * Maintains list of all the row decoders and column decoders. Also returns appropriate decoders.
- *
  */
 public class KinesisDecoderRegistry
 {
@@ -46,9 +43,9 @@ public class KinesisDecoderRegistry
 
     @Inject
     KinesisDecoderRegistry(Set<KinesisRowDecoder> rowDecoders,
-                Set<KinesisFieldDecoder<?>> fieldDecoders)
+            Set<KinesisFieldDecoder<?>> fieldDecoders)
     {
-        checkNotNull(rowDecoders, "rowDecoders is null");
+        requireNonNull(rowDecoders, "rowDecoders is null");
 
         ImmutableMap.Builder<String, KinesisRowDecoder> rowBuilder = ImmutableMap.builder();
         for (KinesisRowDecoder rowDecoder : rowDecoders) {
@@ -91,13 +88,13 @@ public class KinesisDecoderRegistry
 
     public KinesisFieldDecoder<?> getFieldDecoder(String rowDataFormat, Class<?> fieldType, @Nullable String fieldDataFormat)
     {
-        checkNotNull(rowDataFormat, "rowDataFormat is null");
-        checkNotNull(fieldType, "fieldType is null");
+        requireNonNull(rowDataFormat, "rowDataFormat is null");
+        requireNonNull(fieldType, "fieldType is null");
 
         checkState(fieldDecoders.containsKey(rowDataFormat), "no field decoders for '%s' found", rowDataFormat);
         Set<KinesisFieldDecoder<?>> decoders = fieldDecoders.get(rowDataFormat).get(fieldType);
 
-        ImmutableSet<String> fieldNames = ImmutableSet.of(Objects.firstNonNull(fieldDataFormat, KinesisFieldDecoder.DEFAULT_FIELD_DECODER_NAME),
+        ImmutableSet<String> fieldNames = ImmutableSet.of(firstNonNull(fieldDataFormat, KinesisFieldDecoder.DEFAULT_FIELD_DECODER_NAME),
                 KinesisFieldDecoder.DEFAULT_FIELD_DECODER_NAME);
 
         for (String fieldName : fieldNames) {

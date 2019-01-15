@@ -13,20 +13,18 @@
  */
 package com.qubole.presto.kinesis.decoder;
 
-import com.qubole.presto.kinesis.decoder.csv.CsvKinesisDecoderModule;
-import com.qubole.presto.kinesis.decoder.dummy.DummyKinesisDecoderModule;
-import com.qubole.presto.kinesis.decoder.json.JsonKinesisDecoderModule;
-import com.qubole.presto.kinesis.decoder.raw.RawKinesisDecoderModule;
 import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
 import com.google.inject.TypeLiteral;
 import com.google.inject.multibindings.Multibinder;
+import com.qubole.presto.kinesis.decoder.csv.CsvKinesisDecoderModule;
+import com.qubole.presto.kinesis.decoder.dummy.DummyKinesisDecoderModule;
+import com.qubole.presto.kinesis.decoder.json.JsonKinesisDecoderModule;
+import com.qubole.presto.kinesis.decoder.raw.RawKinesisDecoderModule;
 
 /**
- *
  * Kinesis Decoder implementation of Injection Module interface. Binds all the Row and column decoder modules.
- *
  */
 public class KinesisDecoderModule
         implements Module

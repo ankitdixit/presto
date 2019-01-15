@@ -39,7 +39,6 @@ import java.util.function.Supplier;
 import static java.util.Objects.requireNonNull;
 
 /**
- *
  * This factory class creates the KinesisConnector during server start and binds all the dependency
  * by calling create() method.
  */
@@ -61,8 +60,8 @@ public class KinesisConnectorFactory
     private Injector injector;
 
     KinesisConnectorFactory(ClassLoader classLoader, Optional<Supplier<Map<SchemaTableName, KinesisStreamDescription>>> tableDescriptionSupplier,
-                            Map<String, String> optionalConfig,
-                            Optional<Class<? extends KinesisClientProvider>> altProviderClass)
+            Map<String, String> optionalConfig,
+            Optional<Class<? extends KinesisClientProvider>> altProviderClass)
     {
         this.classLoader = classLoader;
         this.tableDescriptionSupplier = requireNonNull(tableDescriptionSupplier, "tableDescriptionSupplier is null");
@@ -122,14 +121,13 @@ public class KinesisConnectorFactory
                         else {
                             binder.bind(new TypeLiteral<Supplier<Map<SchemaTableName, KinesisStreamDescription>>>() {}).to(KinesisTableDescriptionSupplier.class).in(Scopes.SINGLETON);
                         }
-                    }
-            );
+                    });
 
             this.injector = app.strictConfig()
-                        .doNotInitializeLogging()
-                        .setRequiredConfigurationProperties(config)
-                        .setOptionalConfigurationProperties(optionalConfig)
-                        .initialize();
+                    .doNotInitializeLogging()
+                    .setRequiredConfigurationProperties(config)
+                    .setOptionalConfigurationProperties(optionalConfig)
+                    .initialize();
 
             KinesisConnector connector = this.injector.getInstance(KinesisConnector.class);
 

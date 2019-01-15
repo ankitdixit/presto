@@ -14,6 +14,9 @@
 package com.qubole.presto.kinesis.s3config;
 
 import com.amazonaws.services.s3.AmazonS3URI;
+import com.facebook.presto.spi.SchemaTableName;
+import com.google.common.collect.ImmutableMap;
+import com.google.inject.Injector;
 import com.qubole.presto.kinesis.KinesisConnector;
 import com.qubole.presto.kinesis.KinesisPlugin;
 import com.qubole.presto.kinesis.KinesisStreamDescription;
@@ -21,9 +24,6 @@ import com.qubole.presto.kinesis.KinesisStreamFieldDescription;
 import com.qubole.presto.kinesis.KinesisStreamFieldGroup;
 import com.qubole.presto.kinesis.KinesisTableDescriptionSupplier;
 import com.qubole.presto.kinesis.util.TestUtils;
-import com.facebook.presto.spi.SchemaTableName;
-import com.google.common.collect.ImmutableMap;
-import com.google.inject.Injector;
 import io.airlift.log.Logger;
 import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;

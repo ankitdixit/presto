@@ -18,7 +18,6 @@ import com.amazonaws.AmazonServiceException;
 import com.amazonaws.AmazonWebServiceRequest;
 import com.amazonaws.ResponseMetadata;
 import com.amazonaws.regions.Region;
-
 import com.amazonaws.services.kinesis.AmazonKinesisClient;
 import com.amazonaws.services.kinesis.model.CreateStreamRequest;
 import com.amazonaws.services.kinesis.model.CreateStreamResult;
@@ -50,26 +49,28 @@ import java.util.Date;
 /**
  * Mock kinesis client for testing that is primarily used for reading from the
  * stream as we do here in Presto.
- *
+ * <p>
  * This is to help prove that the API is being used correctly and debug any
  * issues that arise without incurring AWS load and charges.  It is far from a complete
  * implementation of Kinesis.
- *
+ * <p>
  * Created by derekbennett on 6/20/16.
  */
-public class MockKinesisClient extends AmazonKinesisClient
+public class MockKinesisClient
+        extends AmazonKinesisClient
 {
     private String endpoint = "";
-    private Region region = null;
-    ArrayList<InternalStream> streams = new ArrayList<InternalStream>();
+    private Region region;
+    ArrayList<InternalStream> streams = new ArrayList<>();
 
     //// Support classes
 
-    public static class InternalShard extends Shard
+    public static class InternalShard
+            extends Shard
     {
-        private ArrayList<Record> recs = new ArrayList<Record>();
+        private ArrayList<Record> recs = new ArrayList<>();
         private String streamName = "";
-        private int index = 0;
+        private int index;
 
         public InternalShard(String owningStream, int anIndex)
         {
@@ -126,7 +127,7 @@ public class MockKinesisClient extends AmazonKinesisClient
         private int retentionPeriodHours = 24;
         private ArrayList<InternalShard> shards = new ArrayList<InternalShard>();
         private int sequenceNo = 100;
-        private int nextShard = 0;
+        private int nextShard;
 
         public InternalStream(String aName, int nbShards, boolean isActive)
         {
@@ -230,8 +231,8 @@ public class MockKinesisClient extends AmazonKinesisClient
     public static class ShardIterator
     {
         public String streamId = "";
-        public int shardIndex = 0;
-        public int recordIndex = 0;
+        public int shardIndex;
+        public int recordIndex;
 
         public ShardIterator(String aStreamId, int aShard, int aRecord)
         {
@@ -307,13 +308,17 @@ public class MockKinesisClient extends AmazonKinesisClient
         return externalList;
     }
 
-    /** Clears everything, including all stream and shard definitions. */
+    /**
+     * Clears everything, including all stream and shard definitions.
+     */
     public void clearAll()
     {
         this.streams.clear();
     }
 
-    /** Clears records from shards but leaves stream and shard structure in place. */
+    /**
+     * Clears records from shards but leaves stream and shard structure in place.
+     */
     public void clearRecords()
     {
         for (InternalStream stream : this.streams) {
@@ -322,19 +327,22 @@ public class MockKinesisClient extends AmazonKinesisClient
     }
 
     @Override
-    public void setEndpoint(String s) throws IllegalArgumentException
+    public void setEndpoint(String s)
+            throws IllegalArgumentException
     {
         this.endpoint = s;
     }
 
     @Override
-    public void setRegion(Region region) throws IllegalArgumentException
+    public void setRegion(Region region)
+            throws IllegalArgumentException
     {
         this.region = region;
     }
 
     @Override
-    public PutRecordResult putRecord(PutRecordRequest putRecordRequest) throws AmazonServiceException, AmazonClientException
+    public PutRecordResult putRecord(PutRecordRequest putRecordRequest)
+            throws AmazonServiceException, AmazonClientException
     {
         // Setup method to add a new record:
         InternalStream theStream = this.getStream(putRecordRequest.getStreamName());
@@ -348,7 +356,8 @@ public class MockKinesisClient extends AmazonKinesisClient
     }
 
     @Override
-    public CreateStreamResult createStream(CreateStreamRequest createStreamRequest) throws AmazonServiceException, AmazonClientException
+    public CreateStreamResult createStream(CreateStreamRequest createStreamRequest)
+            throws AmazonServiceException, AmazonClientException
     {
         // Setup method to create a new stream:
         InternalStream stream = new InternalStream(createStreamRequest.getStreamName(), createStreamRequest.getShardCount(), true);
@@ -357,13 +366,15 @@ public class MockKinesisClient extends AmazonKinesisClient
     }
 
     @Override
-    public CreateStreamResult createStream(String s, Integer integer) throws AmazonServiceException, AmazonClientException
+    public CreateStreamResult createStream(String s, Integer integer)
+            throws AmazonServiceException, AmazonClientException
     {
         return this.createStream((new CreateStreamRequest()).withStreamName(s).withShardCount(integer));
     }
 
     @Override
-    public PutRecordsResult putRecords(PutRecordsRequest putRecordsRequest) throws AmazonServiceException, AmazonClientException
+    public PutRecordsResult putRecords(PutRecordsRequest putRecordsRequest)
+            throws AmazonServiceException, AmazonClientException
     {
         // Setup method to add a batch of new records:
         InternalStream theStream = this.getStream(putRecordsRequest.getStreamName());
@@ -384,7 +395,8 @@ public class MockKinesisClient extends AmazonKinesisClient
     }
 
     @Override
-    public DescribeStreamResult describeStream(DescribeStreamRequest describeStreamRequest) throws AmazonServiceException, AmazonClientException
+    public DescribeStreamResult describeStream(DescribeStreamRequest describeStreamRequest)
+            throws AmazonServiceException, AmazonClientException
     {
         InternalStream theStream = this.getStream(describeStreamRequest.getStreamName());
         if (theStream != null) {
@@ -412,7 +424,8 @@ public class MockKinesisClient extends AmazonKinesisClient
     }
 
     @Override
-    public GetShardIteratorResult getShardIterator(GetShardIteratorRequest getShardIteratorRequest) throws AmazonServiceException, AmazonClientException
+    public GetShardIteratorResult getShardIterator(GetShardIteratorRequest getShardIteratorRequest)
+            throws AmazonServiceException, AmazonClientException
     {
         ShardIterator iter = ShardIterator.fromStreamAndShard(getShardIteratorRequest.getStreamName(), getShardIteratorRequest.getShardId());
         if (iter != null) {
@@ -440,7 +453,8 @@ public class MockKinesisClient extends AmazonKinesisClient
     }
 
     @Override
-    public GetRecordsResult getRecords(GetRecordsRequest getRecordsRequest) throws AmazonServiceException, AmazonClientException
+    public GetRecordsResult getRecords(GetRecordsRequest getRecordsRequest)
+            throws AmazonServiceException, AmazonClientException
     {
         ShardIterator iter = ShardIterator.fromString(getRecordsRequest.getShardIterator());
         if (iter == null) {
@@ -493,73 +507,85 @@ public class MockKinesisClient extends AmazonKinesisClient
     //// Unsupported methods
 
     @Override
-    public ListTagsForStreamResult listTagsForStream(ListTagsForStreamRequest listTagsForStreamRequest) throws AmazonServiceException, AmazonClientException
+    public ListTagsForStreamResult listTagsForStream(ListTagsForStreamRequest listTagsForStreamRequest)
+            throws AmazonServiceException, AmazonClientException
     {
         return null;
     }
 
     @Override
-    public ListStreamsResult listStreams(ListStreamsRequest listStreamsRequest) throws AmazonServiceException, AmazonClientException
+    public ListStreamsResult listStreams(ListStreamsRequest listStreamsRequest)
+            throws AmazonServiceException, AmazonClientException
     {
         return null;
     }
 
     @Override
-    public ListStreamsResult listStreams() throws AmazonServiceException, AmazonClientException
+    public ListStreamsResult listStreams()
+            throws AmazonServiceException, AmazonClientException
     {
         return null;
     }
 
     @Override
-    public PutRecordResult putRecord(String s, ByteBuffer byteBuffer, String s1) throws AmazonServiceException, AmazonClientException
+    public PutRecordResult putRecord(String s, ByteBuffer byteBuffer, String s1)
+            throws AmazonServiceException, AmazonClientException
     {
         throw new UnsupportedOperationException("MockKinesisClient doesn't support this.");
     }
 
     @Override
-    public PutRecordResult putRecord(String s, ByteBuffer byteBuffer, String s1, String s2) throws AmazonServiceException, AmazonClientException
+    public PutRecordResult putRecord(String s, ByteBuffer byteBuffer, String s1, String s2)
+            throws AmazonServiceException, AmazonClientException
     {
         throw new UnsupportedOperationException("MockKinesisClient doesn't support this.");
     }
 
     @Override
-    public DescribeStreamResult describeStream(String s) throws AmazonServiceException, AmazonClientException
+    public DescribeStreamResult describeStream(String s)
+            throws AmazonServiceException, AmazonClientException
     {
         return null;
     }
 
     @Override
-    public DescribeStreamResult describeStream(String s, String s1) throws AmazonServiceException, AmazonClientException
+    public DescribeStreamResult describeStream(String s, String s1)
+            throws AmazonServiceException, AmazonClientException
     {
         return null;
     }
 
     @Override
-    public DescribeStreamResult describeStream(String s, Integer integer, String s1) throws AmazonServiceException, AmazonClientException
+    public DescribeStreamResult describeStream(String s, Integer integer, String s1)
+            throws AmazonServiceException, AmazonClientException
     {
         return null;
     }
 
     @Override
-    public GetShardIteratorResult getShardIterator(String s, String s1, String s2) throws AmazonServiceException, AmazonClientException
+    public GetShardIteratorResult getShardIterator(String s, String s1, String s2)
+            throws AmazonServiceException, AmazonClientException
     {
         return null;
     }
 
     @Override
-    public GetShardIteratorResult getShardIterator(String s, String s1, String s2, String s3) throws AmazonServiceException, AmazonClientException
+    public GetShardIteratorResult getShardIterator(String s, String s1, String s2, String s3)
+            throws AmazonServiceException, AmazonClientException
     {
         return null;
     }
 
     @Override
-    public ListStreamsResult listStreams(String s) throws AmazonServiceException, AmazonClientException
+    public ListStreamsResult listStreams(String s)
+            throws AmazonServiceException, AmazonClientException
     {
         return null;
     }
 
     @Override
-    public ListStreamsResult listStreams(Integer integer, String s) throws AmazonServiceException, AmazonClientException
+    public ListStreamsResult listStreams(Integer integer, String s)
+            throws AmazonServiceException, AmazonClientException
     {
         return null;
     }

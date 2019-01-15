@@ -13,17 +13,6 @@
  */
 package com.qubole.presto.kinesis;
 
-import static com.facebook.presto.spi.type.TypeSignature.parseTypeSignature;
-import static com.google.common.base.Preconditions.checkArgument;
-import static java.util.Objects.requireNonNull;
-import static io.airlift.configuration.ConfigBinder.configBinder;
-import static io.airlift.json.JsonBinder.jsonBinder;
-import static io.airlift.json.JsonCodecBinder.jsonCodecBinder;
-
-import javax.inject.Inject;
-
-import com.qubole.presto.kinesis.decoder.KinesisDecoderModule;
-import com.qubole.presto.kinesis.s3config.S3TableConfigClient;
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.spi.type.TypeManager;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -32,6 +21,17 @@ import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
+import com.qubole.presto.kinesis.decoder.KinesisDecoderModule;
+import com.qubole.presto.kinesis.s3config.S3TableConfigClient;
+
+import javax.inject.Inject;
+
+import static com.facebook.presto.spi.type.TypeSignature.parseTypeSignature;
+import static com.google.common.base.Preconditions.checkArgument;
+import static io.airlift.configuration.ConfigBinder.configBinder;
+import static io.airlift.json.JsonBinder.jsonBinder;
+import static io.airlift.json.JsonCodecBinder.jsonCodecBinder;
+import static java.util.Objects.requireNonNull;
 
 public class KinesisConnectorModule
         implements Module
@@ -66,7 +66,7 @@ public class KinesisConnectorModule
     }
 
     public static final class TypeDeserializer
-        extends FromStringDeserializer<Type>
+            extends FromStringDeserializer<Type>
     {
         private static final long serialVersionUID = 1L;
 

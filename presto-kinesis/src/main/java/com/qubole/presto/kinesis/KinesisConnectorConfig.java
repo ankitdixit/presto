@@ -16,13 +16,12 @@ package com.qubole.presto.kinesis;
 import io.airlift.configuration.Config;
 import io.airlift.units.Duration;
 
-import java.util.concurrent.TimeUnit;
-
 import javax.validation.constraints.NotNull;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * This Class handles all the configuration settings that is stored in /etc/catalog/kinesis.properties file
- *
  */
 public class KinesisConnectorConfig
 {
@@ -38,7 +37,7 @@ public class KinesisConnectorConfig
 
     /**
      * An S3 URL with JSON description files for Kinesis streams.
-     *
+     * <p>
      * This is empty by default and will override tableDescriptionDir when set.
      */
     private String tableDescriptionsS3 = "";
@@ -69,13 +68,13 @@ public class KinesisConnectorConfig
     private int fetchAttempts = 2;
 
     /**
-     *  Defines sleep time (in milliseconds) for the thread which is trying to fetch the records from kinesis streams
+     * Defines sleep time (in milliseconds) for the thread which is trying to fetch the records from kinesis streams
      */
     private Duration sleepTime = new Duration(1000, TimeUnit.MILLISECONDS);
 
     /**
      * Use an initial shard iterator type of AT_TIMESTAMP starting iterOffsetSeconds before the current time.
-     *
+     * <p>
      * When false, an initial shard iterator type of TRIM_HORIZON will be used.
      */
     private boolean iterFromTimestamp = true;
@@ -86,13 +85,13 @@ public class KinesisConnectorConfig
      */
     private long iterOffsetSeconds = 86400;
 
-    private String accessKey = null;
+    private String accessKey;
 
-    private String secretKey = null;
+    private String secretKey;
 
     private boolean logKinesisBatches = true;
 
-    private boolean checkpointEnabled = false;
+    private boolean checkpointEnabled;
 
     private long dynamoReadCapacity = 50L;
 
@@ -102,7 +101,7 @@ public class KinesisConnectorConfig
 
     private String logicalProcessName = "process1";
 
-    private int iterationNumber = 0;
+    private int iterationNumber;
 
     @NotNull
     public String getTableDescriptionDir()
@@ -346,4 +345,4 @@ public class KinesisConnectorConfig
         this.iterationNumber = iterationNumber;
         return this;
     }
- }
+}

@@ -42,13 +42,13 @@ import java.util.Optional;
 import java.util.UUID;
 
 import static com.facebook.presto.spi.type.TimeZoneKey.UTC_KEY;
+import static com.facebook.presto.testing.assertions.Assert.assertEquals;
 import static java.util.Locale.ENGLISH;
-import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 /**
  * Note: this is an integration test that connects to AWS Kinesis.
- *
+ * <p>
  * Only run if you have an account setup where you can create streams and put/get records.
  * You may incur AWS charges if you run this test.  You probably want to setup an IAM
  * user for your CI server to use.
@@ -72,12 +72,12 @@ public class TestMinimalFunctionality
     private StandaloneQueryRunner queryRunner;
 
     @Parameters({
-        "kinesis.awsAccessKey",
-        "kinesis.awsSecretKey"
+            "kinesis.awsAccessKey",
+            "kinesis.awsSecretKey"
     })
     @BeforeClass
     public void start(String accessKey, String secretKey)
-        throws Exception
+            throws Exception
     {
         embeddedKinesisStream = new EmbeddedKinesisStream(TestUtils.noneToBlank(accessKey), TestUtils.noneToBlank(secretKey));
     }
@@ -90,8 +90,8 @@ public class TestMinimalFunctionality
     }
 
     @Parameters({
-        "kinesis.awsAccessKey",
-        "kinesis.awsSecretKey"
+            "kinesis.awsAccessKey",
+            "kinesis.awsSecretKey"
     })
     @BeforeMethod
     public void spinUp(String accessKey, String secretKey)
@@ -100,9 +100,9 @@ public class TestMinimalFunctionality
         streamName = "test_" + UUID.randomUUID().toString().replaceAll("-", "_");
         embeddedKinesisStream.createStream(2, streamName);
         this.queryRunner = new StandaloneQueryRunner(SESSION);
-        TestUtils.installKinesisPlugin(queryRunner,
-                ImmutableMap.<SchemaTableName, KinesisStreamDescription>builder().
-                put(TestUtils.createEmptyStreamDescription(streamName, new SchemaTableName("default", streamName))).build(),
+        TestUtils.installKinesisPlugin(queryRunner, ImmutableMap.<SchemaTableName, KinesisStreamDescription>builder()
+                        .put(TestUtils.createEmptyStreamDescription(streamName, new SchemaTableName("default", streamName)))
+                        .build(),
                 TestUtils.noneToBlank(accessKey), TestUtils.noneToBlank(secretKey));
     }
 
@@ -137,7 +137,7 @@ public class TestMinimalFunctionality
     public void testStreamHasData()
             throws Exception
     {
-        MaterializedResult result = queryRunner.execute("Select count(1) from " + streamName);
+        MaterializedResult result = queryRunner.execute("SELECT COUNT(1) FROM " + streamName);
 
         MaterializedResult expected = MaterializedResult.resultBuilder(SESSION, BigintType.BIGINT)
                 .row(0)
@@ -148,7 +148,7 @@ public class TestMinimalFunctionality
         int count = 500;
         createMessages(streamName, count);
 
-        result = queryRunner.execute("SELECT count(1) from " + streamName);
+        result = queryRunner.execute("SELECT COUNT(1) FROM " + streamName);
 
         expected = MaterializedResult.resultBuilder(SESSION, BigintType.BIGINT)
                 .row(count)

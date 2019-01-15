@@ -13,23 +13,23 @@
  */
 package com.qubole.presto.kinesis;
 
-import static com.google.common.base.MoreObjects.toStringHelper;
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Strings.isNullOrEmpty;
-import io.airlift.slice.Slice;
-import io.airlift.slice.Slices;
-
-import java.util.Set;
-
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.type.BigintType;
 import com.facebook.presto.spi.type.BooleanType;
+import com.facebook.presto.spi.type.TimestampType;
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.spi.type.VarcharType;
-import com.facebook.presto.spi.type.TimestampType;
-import java.util.Objects;
 import com.google.common.collect.ImmutableSet;
+import io.airlift.slice.Slice;
+import io.airlift.slice.Slices;
+
+import java.util.Objects;
+import java.util.Set;
+
+import static com.google.common.base.MoreObjects.toStringHelper;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.util.Objects.requireNonNull;
 
 public class KinesisInternalFieldDescription
 {
@@ -66,14 +66,14 @@ public class KinesisInternalFieldDescription
     private final String comment;
 
     KinesisInternalFieldDescription(
-                String name,
-                Type type,
-                String comment)
+            String name,
+            Type type,
+            String comment)
     {
         checkArgument(!isNullOrEmpty(name), "name is null or is empty");
         this.name = name;
-        this.type = checkNotNull(type, "type is null");
-        this.comment = checkNotNull(comment, "comment is null");
+        this.type = requireNonNull(type, "type is null");
+        this.comment = requireNonNull(comment, "comment is null");
     }
 
     public String getName()
@@ -211,6 +211,7 @@ public class KinesisInternalFieldDescription
             extends KinesisFieldValueProvider
     {
         private final byte[] value;
+
         private BytesKinesisFieldValueProvider(byte[] value)
         {
             this.value = value;

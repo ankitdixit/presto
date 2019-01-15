@@ -13,20 +13,18 @@
  */
 package com.qubole.presto.kinesis.decoder.dummy;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static java.lang.String.format;
-
+import com.facebook.presto.spi.PrestoException;
+import com.google.common.collect.ImmutableSet;
+import com.qubole.presto.kinesis.KinesisColumnHandle;
+import com.qubole.presto.kinesis.KinesisFieldValueProvider;
 import com.qubole.presto.kinesis.decoder.KinesisFieldDecoder;
 import io.airlift.slice.Slice;
 
 import java.util.Set;
 
-import com.qubole.presto.kinesis.KinesisColumnHandle;
-import com.qubole.presto.kinesis.KinesisFieldValueProvider;
-import com.facebook.presto.spi.PrestoException;
-import com.google.common.collect.ImmutableSet;
-
 import static com.qubole.presto.kinesis.KinesisErrorCode.KINESIS_CONVERSION_NOT_SUPPORTED;
+import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
 
 public class DummyKinesisFieldDecoder
         implements KinesisFieldDecoder<Void>
@@ -58,7 +56,7 @@ public class DummyKinesisFieldDecoder
     @Override
     public KinesisFieldValueProvider decode(Void value, KinesisColumnHandle columnHandle)
     {
-        checkNotNull(columnHandle, "columnHandle is null");
+        requireNonNull(columnHandle, "columnHandle is null");
 
         return new KinesisFieldValueProvider()
         {

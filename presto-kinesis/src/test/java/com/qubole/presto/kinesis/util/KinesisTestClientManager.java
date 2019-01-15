@@ -22,7 +22,8 @@ import com.qubole.presto.kinesis.KinesisClientProvider;
 /**
  * Test implementation of KinesisClientProvider that incorporates a mock Kinesis client.
  */
-public class KinesisTestClientManager implements KinesisClientProvider
+public class KinesisTestClientManager
+        implements KinesisClientProvider
 {
     private final AmazonKinesisClient client = new MockKinesisClient();
     private final AmazonDynamoDBClient dynamoDBClient;

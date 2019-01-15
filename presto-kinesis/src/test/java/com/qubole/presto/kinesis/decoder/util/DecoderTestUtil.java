@@ -13,15 +13,15 @@
  */
 package com.qubole.presto.kinesis.decoder.util;
 
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertNotNull;
-import static org.testng.Assert.assertTrue;
+import com.qubole.presto.kinesis.KinesisColumnHandle;
+import com.qubole.presto.kinesis.KinesisFieldValueProvider;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Set;
 
-import com.qubole.presto.kinesis.KinesisColumnHandle;
-import com.qubole.presto.kinesis.KinesisFieldValueProvider;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 public class DecoderTestUtil
 {

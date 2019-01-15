@@ -13,9 +13,19 @@
  */
 package com.qubole.presto.kinesis;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-
+import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
+import com.amazonaws.services.kinesis.model.GetRecordsRequest;
+import com.amazonaws.services.kinesis.model.GetRecordsResult;
+import com.amazonaws.services.kinesis.model.GetShardIteratorRequest;
+import com.amazonaws.services.kinesis.model.GetShardIteratorResult;
+import com.amazonaws.services.kinesis.model.Record;
+import com.amazonaws.services.kinesis.model.ResourceNotFoundException;
+import com.facebook.presto.spi.ConnectorSession;
+import com.facebook.presto.spi.RecordCursor;
+import com.facebook.presto.spi.RecordSet;
+import com.facebook.presto.spi.type.Type;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.qubole.presto.kinesis.decoder.KinesisFieldDecoder;
 import com.qubole.presto.kinesis.decoder.KinesisRowDecoder;
 import io.airlift.log.Logger;
@@ -30,30 +40,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClient;
-import com.amazonaws.services.kinesis.model.GetRecordsRequest;
-import com.amazonaws.services.kinesis.model.GetRecordsResult;
-import com.amazonaws.services.kinesis.model.GetShardIteratorRequest;
-import com.amazonaws.services.kinesis.model.GetShardIteratorResult;
-import com.amazonaws.services.kinesis.model.Record;
-import com.amazonaws.services.kinesis.model.ResourceNotFoundException;
-
-import com.facebook.presto.spi.ConnectorSession;
-import com.facebook.presto.spi.RecordCursor;
-import com.facebook.presto.spi.RecordSet;
-import com.facebook.presto.spi.type.Type;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import static com.google.common.base.Preconditions.checkArgument;
+import static java.util.Objects.requireNonNull;
 
 public class KinesisRecordSet
         implements RecordSet
 {
-    /** Indicates how close to current we want to be before stopping the fetch of records in a query. */
+    /**
+     * Indicates how close to current we want to be before stopping the fetch of records in a query.
+     */
     public static final int MILLIS_BEHIND_LIMIT = 10000;
 
     private static final Logger log = Logger.get(KinesisRecordSet.class);
 
-    private static final byte [] EMPTY_BYTE_ARRAY = new byte [0];
+    private static final byte[] EMPTY_BYTE_ARRAY = new byte[0];
 
     private final KinesisSplit split;
     private final ConnectorSession session;
@@ -86,20 +86,20 @@ public class KinesisRecordSet
             Map<KinesisColumnHandle, KinesisFieldDecoder<?>> messageFieldDecoders,
             KinesisConnectorConfig kinesisConnectorConfig)
     {
-        this.split = checkNotNull(split, "split is null");
-        this.session = checkNotNull(session, "session is null");
-        this.kinesisConnectorConfig = checkNotNull(kinesisConnectorConfig, "KinesisConnectorConfig is null");
+        this.split = requireNonNull(split, "split is null");
+        this.session = requireNonNull(session, "session is null");
+        this.kinesisConnectorConfig = requireNonNull(kinesisConnectorConfig, "KinesisConnectorConfig is null");
 
         this.globalInternalFieldValueProviders = ImmutableSet.of(
                 KinesisInternalFieldDescription.SHARD_ID_FIELD.forByteValue(split.getShardId().getBytes()),
                 KinesisInternalFieldDescription.SEGMENT_START_FIELD.forByteValue(split.getStart().getBytes()));
 
-        this.clientManager = checkNotNull(clientManager, "clientManager is null");
+        this.clientManager = requireNonNull(clientManager, "clientManager is null");
 
-        this.messageDecoder = checkNotNull(messageDecoder, "rowDecoder is null");
-        this.messageFieldDecoders = checkNotNull(messageFieldDecoders, "messageFieldDecoders is null");
+        this.messageDecoder = requireNonNull(messageDecoder, "rowDecoder is null");
+        this.messageFieldDecoders = requireNonNull(messageFieldDecoders, "messageFieldDecoders is null");
 
-        this.columnHandles = checkNotNull(columnHandles, "columnHandles is null");
+        this.columnHandles = requireNonNull(columnHandles, "columnHandles is null");
 
         ImmutableList.Builder<Type> typeBuilder = ImmutableList.builder();
 
@@ -177,13 +177,13 @@ public class KinesisRecordSet
         // TODO: total bytes here only includes records we iterate through, not total read from Kinesis.
         // This may not be an issue, but if total vs. completed is an important signal to Presto then
         // the implementation below could be a problem.  Need to investigate.
-        private long batchesRead = 0;
-        private long messagesRead = 0;
-        private long totalBytes = 0;
-        private long totalMessages = 0;
-        private long lastReadTime = 0;
+        private long batchesRead;
+        private long messagesRead;
+        private long totalBytes;
+        private long totalMessages;
+        private long lastReadTime;
 
-        private  String shardIterator;
+        private String shardIterator;
         private KinesisFieldValueProvider[] fieldValueProviders;
         private List<Record> kinesisRecords;
         private Iterator<Record> listIterator;
@@ -211,7 +211,7 @@ public class KinesisRecordSet
 
         /**
          * Advances the cursor by one position, retrieving more records from Kinesis if needed.
-         *
+         * <p>
          * We retrieve records from Kinesis in batches, using the getRecordsRequest.  After a
          * getRecordsRequest we keep iterating through that list of records until we run out.  Then
          * we will get another batch unless we've hit the limit or have caught up.
@@ -239,7 +239,9 @@ public class KinesisRecordSet
             }
         }
 
-        /** Determine whether or not to retrieve another batch of records from Kinesis. */
+        /**
+         * Determine whether or not to retrieve another batch of records from Kinesis.
+         */
         private boolean shouldGetMoreRecords()
         {
             return shardIterator != null && batchesRead < maxBatches &&
@@ -248,7 +250,7 @@ public class KinesisRecordSet
 
         /**
          * Retrieves the next batch of records from Kinesis using the shard iterator.
-         *
+         * <p>
          * Most of the time this results in one getRecords call.  However we allow for
          * a call to return an empty list, and we'll try again if we are far enough
          * away from the latest record.
@@ -294,7 +296,9 @@ public class KinesisRecordSet
             messagesRead += kinesisRecords.size();
         }
 
-        /** Working from the internal list, advance to the next row and decode it. */
+        /**
+         * Working from the internal list, advance to the next row and decode it.
+         */
         private boolean nextRow()
         {
             Record currentRecord = listIterator.next();
@@ -343,7 +347,9 @@ public class KinesisRecordSet
             return true;
         }
 
-        /** Protect against possibly null values if this isn't set (not expected) */
+        /**
+         * Protect against possibly null values if this isn't set (not expected)
+         */
         private long getMillisBehindLatest()
         {
             if (getRecordsResult != null && getRecordsResult.getMillisBehindLatest() != null) {

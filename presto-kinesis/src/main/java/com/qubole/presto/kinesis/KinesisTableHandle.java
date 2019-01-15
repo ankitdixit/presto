@@ -13,19 +13,18 @@
  */
 package com.qubole.presto.kinesis;
 
-import static com.google.common.base.MoreObjects.toStringHelper;
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import com.facebook.presto.spi.ConnectorTableHandle;
 import com.facebook.presto.spi.SchemaTableName;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
 
+import static com.google.common.base.MoreObjects.toStringHelper;
+import static java.util.Objects.requireNonNull;
+
 /**
- *
  * Class maintains all the properties of Presto Table
- *
  */
 public class KinesisTableHandle
         implements ConnectorTableHandle
@@ -61,11 +60,11 @@ public class KinesisTableHandle
             @JsonProperty("streamName") String streamName,
             @JsonProperty("messageDataFormat") String messageDataFormat)
     {
-        this.connectorId = checkNotNull(connectorId, "connectorId is null");
-        this.schemaName = checkNotNull(schemaName, "schemaName is null");
-        this.tableName = checkNotNull(tableName, "tableName is null");
-        this.streamName = checkNotNull(streamName, "topicName is null");
-        this.messageDataFormat = checkNotNull(messageDataFormat, "messageDataFormat is null");
+        this.connectorId = requireNonNull(connectorId, "connectorId is null");
+        this.schemaName = requireNonNull(schemaName, "schemaName is null");
+        this.tableName = requireNonNull(tableName, "tableName is null");
+        this.streamName = requireNonNull(streamName, "topicName is null");
+        this.messageDataFormat = requireNonNull(messageDataFormat, "messageDataFormat is null");
     }
 
     @JsonProperty

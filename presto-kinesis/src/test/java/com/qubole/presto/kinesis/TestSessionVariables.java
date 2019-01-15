@@ -39,8 +39,8 @@ import static org.testng.Assert.assertTrue;
  */
 public class TestSessionVariables
 {
-    private Session protoSession = null;
-    private ConnectorSession session = null;
+    private Session protoSession;
+    private ConnectorSession session;
     private SessionPropertyManager propManager = new SessionPropertyManager();
     private Injector injector;
 

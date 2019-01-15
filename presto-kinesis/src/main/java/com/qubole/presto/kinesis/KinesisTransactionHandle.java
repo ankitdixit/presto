@@ -16,6 +16,7 @@ package com.qubole.presto.kinesis;
 import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
 
 public enum KinesisTransactionHandle
-        implements ConnectorTransactionHandle {
+        implements ConnectorTransactionHandle
+{
     INSTANCE
 }

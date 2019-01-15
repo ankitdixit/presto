@@ -13,15 +13,15 @@
  */
 package com.qubole.presto.kinesis.decoder.json;
 
-import static com.qubole.presto.kinesis.decoder.json.RFC2822JsonKinesisFieldDecoder.FORMATTER;
-import static com.qubole.presto.kinesis.decoder.util.DecoderTestUtil.checkIsNull;
-import static com.qubole.presto.kinesis.decoder.util.DecoderTestUtil.checkValue;
-import static java.lang.String.format;
-import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
-
+import com.facebook.presto.spi.type.BigintType;
+import com.facebook.presto.spi.type.VarcharType;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.qubole.presto.kinesis.KinesisColumnHandle;
+import com.qubole.presto.kinesis.KinesisFieldValueProvider;
 import com.qubole.presto.kinesis.decoder.KinesisFieldDecoder;
 import io.airlift.json.ObjectMapperProvider;
+import org.testng.annotations.Test;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
@@ -29,14 +29,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.testng.annotations.Test;
-
-import com.qubole.presto.kinesis.KinesisColumnHandle;
-import com.qubole.presto.kinesis.KinesisFieldValueProvider;
-import com.facebook.presto.spi.type.BigintType;
-import com.facebook.presto.spi.type.VarcharType;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import static com.qubole.presto.kinesis.decoder.json.RFC2822JsonKinesisFieldDecoder.FORMATTER;
+import static com.qubole.presto.kinesis.decoder.util.DecoderTestUtil.checkIsNull;
+import static com.qubole.presto.kinesis.decoder.util.DecoderTestUtil.checkValue;
+import static java.lang.String.format;
+import static org.testng.Assert.assertEquals;
+import static org.testng.Assert.assertTrue;
 
 public class TestRFC2822JsonKinesisFieldDecoder
 {

@@ -30,7 +30,7 @@ import static java.util.Objects.requireNonNull;
 
 /**
  * Kinesis version of Presto Plugin interface.
- *
+ * <p>
  * The connector manager injects the type manager and node manager, and then calls getServices
  * to get the connector factory.
  */
@@ -62,7 +62,7 @@ public class KinesisPlugin
     @Override
     public synchronized Iterable<ConnectorFactory> getConnectorFactories()
     {
-        if(factory == null) {
+        if (factory == null) {
             this.factory = new KinesisConnectorFactory(getClassLoader(), tableDescriptionSupplier, optionalConfig, altProviderClass);
         }
         return ImmutableList.of(this.factory);

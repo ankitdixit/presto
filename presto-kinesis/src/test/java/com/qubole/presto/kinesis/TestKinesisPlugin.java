@@ -33,7 +33,7 @@ import static org.testng.Assert.assertTrue;
 
 /**
  * Test that the plug in API is satisfied and all of the required objects can be created.
- *
+ * <p>
  * This will not make any calls to AWS, it merely checks that all of the Plug in SPI
  * objects are in place.
  */

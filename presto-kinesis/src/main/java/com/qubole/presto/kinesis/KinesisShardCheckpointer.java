@@ -13,16 +13,15 @@
  */
 package com.qubole.presto.kinesis;
 
-import io.airlift.log.Logger;
-
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
+import com.amazonaws.services.kinesis.clientlibrary.types.ExtendedSequenceNumber;
 import com.amazonaws.services.kinesis.leases.exceptions.DependencyException;
 import com.amazonaws.services.kinesis.leases.exceptions.InvalidStateException;
 import com.amazonaws.services.kinesis.leases.exceptions.ProvisionedThroughputException;
 import com.amazonaws.services.kinesis.leases.impl.KinesisClientLease;
 import com.amazonaws.services.kinesis.leases.impl.KinesisClientLeaseManager;
-import com.amazonaws.services.kinesis.clientlibrary.types.ExtendedSequenceNumber;
 import com.google.common.base.Throwables;
+import io.airlift.log.Logger;
 
 public class KinesisShardCheckpointer
 {
@@ -104,13 +103,13 @@ public class KinesisShardCheckpointer
     private String createCheckpointKey(int iterationNo)
     {
         return new StringBuilder(this.logicalProcessName)
-            .append("_")
-            .append(this.kinesisSplit.getStreamName())
-            .append("_")
-            .append(this.kinesisSplit.getShardId())
-            .append("_")
-            .append(String.valueOf(iterationNo))
-            .toString();
+                .append("_")
+                .append(this.kinesisSplit.getStreamName())
+                .append("_")
+                .append(this.kinesisSplit.getShardId())
+                .append("_")
+                .append(String.valueOf(iterationNo))
+                .toString();
     }
 
     // storing last read sequence no. in dynamodb table

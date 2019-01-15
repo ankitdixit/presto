@@ -13,14 +13,14 @@
  */
 package com.qubole.presto.kinesis.decoder.raw;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import com.qubole.presto.kinesis.KinesisColumnHandle;
 import com.qubole.presto.kinesis.KinesisFieldValueProvider;
 import com.qubole.presto.kinesis.decoder.KinesisFieldDecoder;
 import com.qubole.presto.kinesis.decoder.KinesisRowDecoder;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class RawKinesisRowDecoder
         implements KinesisRowDecoder

@@ -13,22 +13,22 @@
  */
 package com.qubole.presto.kinesis;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.List;
-
-import com.qubole.presto.kinesis.decoder.KinesisDecoderRegistry;
-import com.qubole.presto.kinesis.decoder.KinesisFieldDecoder;
-import com.qubole.presto.kinesis.decoder.KinesisRowDecoder;
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ConnectorSession;
-import com.facebook.presto.spi.connector.ConnectorRecordSetProvider;
 import com.facebook.presto.spi.ConnectorSplit;
 import com.facebook.presto.spi.RecordSet;
+import com.facebook.presto.spi.connector.ConnectorRecordSetProvider;
 import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
+import com.qubole.presto.kinesis.decoder.KinesisDecoderRegistry;
+import com.qubole.presto.kinesis.decoder.KinesisFieldDecoder;
+import com.qubole.presto.kinesis.decoder.KinesisRowDecoder;
+
+import java.util.List;
+
+import static java.util.Objects.requireNonNull;
 
 public class KinesisRecordSetProvider
         implements ConnectorRecordSetProvider
@@ -39,20 +39,20 @@ public class KinesisRecordSetProvider
     private final KinesisConnectorConfig kinesisConnectorConfig;
 
     @Inject
-    public  KinesisRecordSetProvider(KinesisDecoderRegistry registry,
+    public KinesisRecordSetProvider(KinesisDecoderRegistry registry,
             KinesisHandleResolver handleResolver,
             KinesisClientProvider clientManager,
             KinesisConnectorConfig kinesisConnectorConfig)
     {
-        this.registry = checkNotNull(registry, "registry is null");
-        this.handleResolver = checkNotNull(handleResolver, "handleResolver is null");
-        this.clientManager = checkNotNull(clientManager, "clientManager is null");
-        this.kinesisConnectorConfig = checkNotNull(kinesisConnectorConfig, "kinesisConnectorConfig is null");
+        this.registry = requireNonNull(registry, "registry is null");
+        this.handleResolver = requireNonNull(handleResolver, "handleResolver is null");
+        this.clientManager = requireNonNull(clientManager, "clientManager is null");
+        this.kinesisConnectorConfig = requireNonNull(kinesisConnectorConfig, "kinesisConnectorConfig is null");
     }
 
     @Override
     public RecordSet getRecordSet(ConnectorTransactionHandle transactionHandle, ConnectorSession session,
-                                  ConnectorSplit split, List<? extends ColumnHandle> columns)
+            ConnectorSplit split, List<? extends ColumnHandle> columns)
     {
         KinesisSplit kinesisSplit = handleResolver.convertSplit(split);
 

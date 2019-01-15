@@ -13,36 +13,31 @@
  */
 package com.qubole.presto.kinesis;
 
-import com.qubole.presto.kinesis.s3config.S3TableConfigClient;
-import io.airlift.json.JsonCodec;
-import io.airlift.log.Logger;
-
-import java.nio.file.DirectoryIteratorException;
-import java.nio.file.DirectoryStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.Path;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-
-import org.weakref.jmx.internal.guava.base.Objects;
-
 import com.facebook.presto.spi.SchemaTableName;
-import java.util.function.Supplier;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
+import com.qubole.presto.kinesis.s3config.S3TableConfigClient;
+import io.airlift.json.JsonCodec;
+import io.airlift.log.Logger;
 
+import java.io.IOException;
+import java.nio.file.DirectoryIteratorException;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Supplier;
+
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static java.util.Objects.requireNonNull;
 
 /**
- *
  * This class get() method reads the table description file stored in Kinesis directory
  * and then creates user defined field for Presto Table.
- *
  */
 public class KinesisTableDescriptionSupplier
         implements Supplier<Map<SchemaTableName, KinesisStreamDescription>>, ConnectorShutdown
@@ -55,8 +50,8 @@ public class KinesisTableDescriptionSupplier
 
     @Inject
     KinesisTableDescriptionSupplier(KinesisConnectorConfig kinesisConnectorConfig,
-                                    JsonCodec<KinesisStreamDescription> streamDescriptionCodec,
-                                    S3TableConfigClient anS3Client)
+            JsonCodec<KinesisStreamDescription> streamDescriptionCodec,
+            S3TableConfigClient anS3Client)
     {
         this.kinesisConnectorConfig = requireNonNull(kinesisConnectorConfig, "kinesisConnectorConfig is null");
         this.streamDescriptionCodec = requireNonNull(streamDescriptionCodec, "streamDescriptionCodec is null");
@@ -81,7 +76,7 @@ public class KinesisTableDescriptionSupplier
             for (Path file : listFiles(Paths.get(kinesisConnectorConfig.getTableDescriptionDir()))) {
                 if (Files.isRegularFile(file) && file.getFileName().toString().endsWith("json")) {
                     KinesisStreamDescription table = streamDescriptionCodec.fromJson(Files.readAllBytes(file));
-                    String schemaName = Objects.firstNonNull(table.getSchemaName(), kinesisConnectorConfig.getDefaultSchema());
+                    String schemaName = firstNonNull(table.getSchemaName(), kinesisConnectorConfig.getDefaultSchema());
                     log.debug("Kinesis table %s %s %s", schemaName, table.getTableName(), table);
                     builder.put(new SchemaTableName(schemaName, table.getTableName()), table);
                 }
@@ -98,7 +93,9 @@ public class KinesisTableDescriptionSupplier
         }
     }
 
-    /** Shutdown any periodic update jobs. */
+    /**
+     * Shutdown any periodic update jobs.
+     */
     @Override
     public void shutdown()
     {

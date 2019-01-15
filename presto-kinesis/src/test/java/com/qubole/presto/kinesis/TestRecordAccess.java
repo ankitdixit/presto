@@ -49,7 +49,7 @@ import static org.testng.Assert.assertTrue;
 
 /**
  * Test record access and querying along with all associated setup.
- *
+ * <p>
  * This is a lighter weight integration test that exercises more parts of
  * the plug in without requiring an actual Kinesis connection.  It uses the mock
  * kinesis client so no AWS activity will occur.
@@ -79,12 +79,14 @@ public class TestRecordAccess
     }
 
     @BeforeMethod
-    public void spinUp() throws Exception {
+    public void spinUp()
+            throws Exception
+    {
         ImmutableMap<SchemaTableName, KinesisStreamDescription> streamMap =
-                ImmutableMap.<SchemaTableName, KinesisStreamDescription>builder().
-                        put(TestUtils.createEmptyStreamDescription(dummyStreamName, new SchemaTableName("default", dummyStreamName))).
-                        put(TestUtils.createSimpleJsonStreamDescription(jsonStreamName, new SchemaTableName("default", jsonStreamName))).
-                        build();
+                ImmutableMap.<SchemaTableName, KinesisStreamDescription>builder()
+                        .put(TestUtils.createEmptyStreamDescription(dummyStreamName, new SchemaTableName("default", dummyStreamName)))
+                        .put(TestUtils.createSimpleJsonStreamDescription(jsonStreamName, new SchemaTableName("default", jsonStreamName)))
+                        .build();
         this.queryRunner = new StandaloneQueryRunner(SESSION);
         KinesisPlugin plugin = TestUtils.installKinesisPlugin(queryRunner, streamMap);
         clientManager = TestUtils.getTestClientManager(plugin.getInjector());
@@ -184,7 +186,7 @@ public class TestRecordAccess
 
     @Test
     public void testJsonStream()
-        throws Exception
+            throws Exception
     {
         // Simple case: add a few specific items, query object and internal fields:
         createJsonMessages(jsonStreamName, 4, 100);
@@ -210,6 +212,6 @@ public class TestRecordAccess
     public void tearDown()
             throws Exception
     {
-       // If desired clear messages or streams depending on the test being conducted!
+        // If desired clear messages or streams depending on the test being conducted!
     }
 }

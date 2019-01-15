@@ -19,16 +19,16 @@ import com.amazonaws.services.kinesis.AmazonKinesisClient;
 import com.amazonaws.services.kinesis.model.DescribeStreamRequest;
 import com.amazonaws.services.s3.AmazonS3Client;
 import com.google.inject.Inject;
-
 import io.airlift.log.Logger;
 
 /**
  * Creates and manages AWS clients for this connector.
- *
+ * <p>
  * Note: credentials can be supplied explicitly through the configuration.  However when these are
  * omitted, the default AWS provider chain is used (which includes instance profile credentials).
  */
-public class KinesisClientManager implements KinesisClientProvider
+public class KinesisClientManager
+        implements KinesisClientProvider
 {
     private static final Logger log = Logger.get(KinesisClientManager.class);
     private final AmazonKinesisClient client;

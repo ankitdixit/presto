@@ -22,44 +22,42 @@ import com.amazonaws.services.s3.model.ListObjectsRequest;
 import com.amazonaws.services.s3.model.ObjectListing;
 import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectSummary;
-
+import com.facebook.presto.spi.SchemaTableName;
+import com.google.common.collect.ImmutableMap;
+import com.google.inject.Inject;
 import com.qubole.presto.kinesis.ConnectorShutdown;
 import com.qubole.presto.kinesis.KinesisClientProvider;
 import com.qubole.presto.kinesis.KinesisConnectorConfig;
 import com.qubole.presto.kinesis.KinesisStreamDescription;
-import com.facebook.presto.spi.SchemaTableName;
-
-import com.google.common.collect.ImmutableMap;
 import io.airlift.json.JsonCodec;
 import io.airlift.log.Logger;
-import com.google.inject.Inject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import static java.util.Objects.requireNonNull;
-
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.Objects.requireNonNull;
+
 /**
  * Utility class to retrieve table definitions from a common place on Amazon S3.
- *
+ * <p>
  * This is so that we can add new tables in a central "metastore" location without
  * having to update every single node with the files.
- *
+ * <p>
  * This makes calls to Amazon AWS using the S3 client.
  */
-public class S3TableConfigClient implements ConnectorShutdown
+public class S3TableConfigClient
+        implements ConnectorShutdown
 {
     private static final Logger log = Logger.get(S3TableConfigClient.class);
 
@@ -68,16 +66,16 @@ public class S3TableConfigClient implements ConnectorShutdown
     private final JsonCodec<KinesisStreamDescription> streamDescriptionCodec;
 
     private final String bucketUrl;
-    private long lastCheck = 0;
-    private ScheduledFuture<?> updateTaskHandle = null;
+    private long lastCheck;
+    private ScheduledFuture<?> updateTaskHandle;
 
     private Map<String, KinesisStreamDescription> internalMap =
             Collections.synchronizedMap(new HashMap<String, KinesisStreamDescription>());
 
     @Inject
     public S3TableConfigClient(KinesisConnectorConfig aConnectorConfig,
-                               KinesisClientProvider aClientManager,
-                               JsonCodec<KinesisStreamDescription> jsonCodec)
+            KinesisClientProvider aClientManager,
+            JsonCodec<KinesisStreamDescription> jsonCodec)
     {
         this.kinesisConnectorConfig = requireNonNull(aConnectorConfig, "connector configuration object is null");
         this.clientManager = requireNonNull(aClientManager, "client manager object is null");
@@ -90,7 +88,9 @@ public class S3TableConfigClient implements ConnectorShutdown
         }
     }
 
-    /** Indicates this class is being used and actively reading table definitions from S3. */
+    /**
+     * Indicates this class is being used and actively reading table definitions from S3.
+     */
     public boolean isUsingS3()
     {
         return !this.bucketUrl.isEmpty();
@@ -99,7 +99,7 @@ public class S3TableConfigClient implements ConnectorShutdown
     /**
      * Main entry point to get table definitions from S3 using bucket and object directory
      * given in the configuration.
-     *
+     * <p>
      * For safety, an immutable copy built from the internal map is returned.
      *
      * @return
@@ -114,7 +114,9 @@ public class S3TableConfigClient implements ConnectorShutdown
         return builder.build();
     }
 
-    /** Shutdown any periodic update jobs. */
+    /**
+     * Shutdown any periodic update jobs.
+     */
     @Override
     public void shutdown()
     {
@@ -134,7 +136,7 @@ public class S3TableConfigClient implements ConnectorShutdown
 
     /**
      * Call S3 to get the most recent object list.
-     *
+     * <p>
      * This is an object list request to AWS in the given "directory".
      *
      * @return
@@ -147,8 +149,8 @@ public class S3TableConfigClient implements ConnectorShutdown
         ArrayList<S3ObjectSummary> returnList = new ArrayList<S3ObjectSummary>();
         try {
             log.info("Getting the listing of objects in the S3 table config directory: bucket %s prefix %s :", directoryURI.getBucket(), directoryURI.getKey());
-            ListObjectsRequest req = new ListObjectsRequest().withBucketName(directoryURI.getBucket()).
-                    withPrefix(directoryURI.getKey() + "/").withDelimiter("/").withMaxKeys(25);
+            ListObjectsRequest req = new ListObjectsRequest().withBucketName(directoryURI.getBucket())
+                    .withPrefix(directoryURI.getKey() + "/").withDelimiter("/").withMaxKeys(25);
             ObjectListing result;
 
             do {
@@ -157,7 +159,7 @@ public class S3TableConfigClient implements ConnectorShutdown
                 returnList.addAll(result.getObjectSummaries());
                 req.setMarker(result.getNextMarker());
             }
-            while(result.isTruncated());
+            while (result.isTruncated());
 
             log.info("Completed getting S3 object listing.");
         }

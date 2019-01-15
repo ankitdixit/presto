@@ -13,12 +13,12 @@
  */
 package com.qubole.presto.kinesis;
 
-import com.qubole.presto.kinesis.util.TestUtils;
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.ConnectorTableMetadata;
 import com.facebook.presto.spi.SchemaTableName;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Injector;
+import com.qubole.presto.kinesis.util.TestUtils;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Map;
 
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
 import static org.testng.Assert.assertNotNull;
+import static org.testng.Assert.assertTrue;
 
 /**
  * Unit test for the TableDescriptionSupplier and related classes

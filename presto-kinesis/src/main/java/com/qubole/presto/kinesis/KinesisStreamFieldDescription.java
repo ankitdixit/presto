@@ -13,16 +13,17 @@
  */
 package com.qubole.presto.kinesis;
 
-import static com.google.common.base.MoreObjects.toStringHelper;
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Strings.isNullOrEmpty;
-
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.type.Type;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import java.util.Objects;
+
+import static com.google.common.base.MoreObjects.toStringHelper;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.util.Objects.requireNonNull;
 
 public class KinesisStreamFieldDescription
 {
@@ -46,7 +47,7 @@ public class KinesisStreamFieldDescription
     {
         checkArgument(!isNullOrEmpty(name), "name is null or is empty");
         this.name = name;
-        this.type = checkNotNull(type, "type is null");
+        this.type = requireNonNull(type, "type is null");
         this.mapping = mapping;
         this.comment = comment;
         this.dataFormat = dataFormat;
