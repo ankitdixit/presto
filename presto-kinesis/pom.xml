@@ -385,6 +385,10 @@
             <artifactId>presto-tests</artifactId>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>com.facebook.presto</groupId>
+            <artifactId>presto-record-decoder</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

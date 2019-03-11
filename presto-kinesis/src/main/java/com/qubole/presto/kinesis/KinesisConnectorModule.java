@@ -13,6 +13,7 @@
  */
 package com.qubole.presto.kinesis;
 
+import com.facebook.presto.decoder.DecoderModule;
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.spi.type.TypeManager;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -52,7 +53,7 @@ public class KinesisConnectorModule
         jsonBinder(binder).addDeserializerBinding(Type.class).to(TypeDeserializer.class);
         jsonCodecBinder(binder).bindJsonCodec(KinesisStreamDescription.class);
 
-        binder.install(new KinesisDecoderModule());
+        binder.install(new DecoderModule());
 
         for (KinesisInternalFieldDescription internalFieldDescription : KinesisInternalFieldDescription.getInternalFields()) {
             bindInternalColumn(binder, internalFieldDescription);
