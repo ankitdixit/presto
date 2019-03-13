@@ -13,7 +13,7 @@
  */
 package com.qubole.presto.kinesis;
 
-import com.facebook.presto.spi.ColumnHandle;
+import com.facebook.presto.decoder.DecoderColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.type.Type;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -29,7 +29,7 @@ import static java.util.Objects.requireNonNull;
  * from kinesis.
  */
 public class KinesisColumnHandle
-        implements ColumnHandle, Comparable<KinesisColumnHandle>
+        implements DecoderColumnHandle, Comparable<KinesisColumnHandle>
 {
     private String connectorId;
     private final int ordinalPosition;

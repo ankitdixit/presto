@@ -78,12 +78,11 @@ public class KinesisHandleResolver
         return kinesisTableHandle;
     }
 
-    KinesisColumnHandle convertColumnHandle(ColumnHandle columnHandle)
+    static KinesisColumnHandle convertColumnHandle(ColumnHandle columnHandle)
     {
         requireNonNull(columnHandle, "columnHandle is null");
         checkArgument(columnHandle instanceof KinesisColumnHandle, "columnHandle is not an instance of KinesisColumnHandle");
         KinesisColumnHandle kinesisColumnHandle = (KinesisColumnHandle) columnHandle;
-        checkArgument(kinesisColumnHandle.getConnectorId().equals(connectorId), "columnHandle is not for this connector");
         return kinesisColumnHandle;
     }
 

@@ -13,6 +13,8 @@
  */
 package com.qubole.presto.kinesis;
 
+import com.facebook.presto.decoder.DispatchingRowDecoderFactory;
+import com.facebook.presto.decoder.RowDecoder;
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.ConnectorSplit;
@@ -20,14 +22,12 @@ import com.facebook.presto.spi.RecordSet;
 import com.facebook.presto.spi.connector.ConnectorRecordSetProvider;
 import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
-import com.qubole.presto.kinesis.decoder.KinesisDecoderRegistry;
-import com.qubole.presto.kinesis.decoder.KinesisFieldDecoder;
-import com.qubole.presto.kinesis.decoder.KinesisRowDecoder;
 
+import java.util.HashMap;
 import java.util.List;
 
+import static com.google.common.collect.ImmutableSet.toImmutableSet;
 import static java.util.Objects.requireNonNull;
 
 public class KinesisRecordSetProvider
@@ -35,16 +35,16 @@ public class KinesisRecordSetProvider
 {
     private final KinesisHandleResolver handleResolver;
     private final KinesisClientProvider clientManager;
-    private final KinesisDecoderRegistry registry;
     private final KinesisConnectorConfig kinesisConnectorConfig;
+    private DispatchingRowDecoderFactory decoderFactory;
 
     @Inject
-    public KinesisRecordSetProvider(KinesisDecoderRegistry registry,
+    public KinesisRecordSetProvider(DispatchingRowDecoderFactory decoderFactory,
             KinesisHandleResolver handleResolver,
             KinesisClientProvider clientManager,
             KinesisConnectorConfig kinesisConnectorConfig)
     {
-        this.registry = requireNonNull(registry, "registry is null");
+        this.decoderFactory = requireNonNull(decoderFactory, "decoderFactory is null");
         this.handleResolver = requireNonNull(handleResolver, "handleResolver is null");
         this.clientManager = requireNonNull(clientManager, "clientManager is null");
         this.kinesisConnectorConfig = requireNonNull(kinesisConnectorConfig, "kinesisConnectorConfig is null");
@@ -55,28 +55,25 @@ public class KinesisRecordSetProvider
             ConnectorSplit split, List<? extends ColumnHandle> columns)
     {
         KinesisSplit kinesisSplit = handleResolver.convertSplit(split);
+        List<KinesisColumnHandle> kinesisColumns = columns.stream()
+                .map(KinesisHandleResolver::convertColumnHandle)
+                .collect(ImmutableList.toImmutableList());
 
         ImmutableList.Builder<KinesisColumnHandle> handleBuilder = ImmutableList.builder();
-        ImmutableMap.Builder<KinesisColumnHandle, KinesisFieldDecoder<?>> messageFieldDecoderBuilder = ImmutableMap.builder();
 
-        KinesisRowDecoder messageDecoder = registry.getRowDecoder(kinesisSplit.getMessageDataFormat());
+        RowDecoder messageDecoder = decoderFactory.create(
+                kinesisSplit.getMessageDataFormat(),
+                new HashMap<>(),
+                kinesisColumns.stream()
+                        .filter(col -> !col.isInternal())
+                        .collect(toImmutableSet()));
 
         for (ColumnHandle handle : columns) {
             KinesisColumnHandle columnHandle = handleResolver.convertColumnHandle(handle);
             handleBuilder.add(columnHandle);
-
-            if (!columnHandle.isInternal()) {
-                KinesisFieldDecoder<?> fieldDecoder = registry.getFieldDecoder(kinesisSplit.getMessageDataFormat(),
-                        columnHandle.getType().getJavaType(),
-                        columnHandle.getDataFormat());
-
-                messageFieldDecoderBuilder.put(columnHandle, fieldDecoder);
-            }
         }
 
         ImmutableList<KinesisColumnHandle> handles = handleBuilder.build();
-        ImmutableMap<KinesisColumnHandle, KinesisFieldDecoder<?>> messageFieldDecoders = messageFieldDecoderBuilder.build();
-
-        return new KinesisRecordSet(kinesisSplit, session, clientManager, handles, messageDecoder, messageFieldDecoders, kinesisConnectorConfig);
+        return new KinesisRecordSet(kinesisSplit, session, clientManager, handles, messageDecoder, kinesisConnectorConfig);
     }
 }

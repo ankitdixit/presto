@@ -20,26 +20,30 @@ import com.amazonaws.services.kinesis.model.GetShardIteratorRequest;
 import com.amazonaws.services.kinesis.model.GetShardIteratorResult;
 import com.amazonaws.services.kinesis.model.Record;
 import com.amazonaws.services.kinesis.model.ResourceNotFoundException;
+import com.facebook.presto.decoder.DecoderColumnHandle;
+import com.facebook.presto.decoder.FieldValueProvider;
+import com.facebook.presto.decoder.RowDecoder;
+import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ConnectorSession;
 import com.facebook.presto.spi.RecordCursor;
 import com.facebook.presto.spi.RecordSet;
+import com.facebook.presto.spi.block.Block;
 import com.facebook.presto.spi.type.Type;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.qubole.presto.kinesis.decoder.KinesisFieldDecoder;
-import com.qubole.presto.kinesis.decoder.KinesisRowDecoder;
 import io.airlift.log.Logger;
 import io.airlift.slice.Slice;
-import io.airlift.slice.Slices;
 
 import java.nio.ByteBuffer;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
+import java.util.Optional;
 
+import static com.facebook.presto.decoder.FieldValueProviders.booleanValueProvider;
+import static com.facebook.presto.decoder.FieldValueProviders.bytesValueProvider;
+import static com.facebook.presto.decoder.FieldValueProviders.longValueProvider;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
 
@@ -60,8 +64,7 @@ public class KinesisRecordSet
     private final KinesisClientProvider clientManager;
     private final KinesisConnectorConfig kinesisConnectorConfig;
 
-    private final KinesisRowDecoder messageDecoder;
-    private final Map<KinesisColumnHandle, KinesisFieldDecoder<?>> messageFieldDecoders;
+    private final RowDecoder messageDecoder;
 
     private final List<KinesisColumnHandle> columnHandles;
     private final List<Type> columnTypes;
@@ -76,30 +79,21 @@ public class KinesisRecordSet
     private String lastReadSeqNo;
     private KinesisShardCheckpointer kinesisShardCheckpointer;
 
-    private final Set<KinesisFieldValueProvider> globalInternalFieldValueProviders;
-
     KinesisRecordSet(KinesisSplit split,
             ConnectorSession session,
             KinesisClientProvider clientManager,
             List<KinesisColumnHandle> columnHandles,
-            KinesisRowDecoder messageDecoder,
-            Map<KinesisColumnHandle, KinesisFieldDecoder<?>> messageFieldDecoders,
+            RowDecoder messageDecoder,
             KinesisConnectorConfig kinesisConnectorConfig)
     {
         this.split = requireNonNull(split, "split is null");
         this.session = requireNonNull(session, "session is null");
         this.kinesisConnectorConfig = requireNonNull(kinesisConnectorConfig, "KinesisConnectorConfig is null");
 
-        this.globalInternalFieldValueProviders = ImmutableSet.of(
-                KinesisInternalFieldDescription.SHARD_ID_FIELD.forByteValue(split.getShardId().getBytes()),
-                KinesisInternalFieldDescription.SEGMENT_START_FIELD.forByteValue(split.getStart().getBytes()));
-
         this.clientManager = requireNonNull(clientManager, "clientManager is null");
 
-        this.messageDecoder = requireNonNull(messageDecoder, "rowDecoder is null");
-        this.messageFieldDecoders = requireNonNull(messageFieldDecoders, "messageFieldDecoders is null");
-
         this.columnHandles = requireNonNull(columnHandles, "columnHandles is null");
+        this.messageDecoder = messageDecoder;
 
         ImmutableList.Builder<Type> typeBuilder = ImmutableList.builder();
 
@@ -174,6 +168,7 @@ public class KinesisRecordSet
     public class KinesisRecordCursor
             implements RecordCursor
     {
+        private final FieldValueProvider[] currentRowValues = new FieldValueProvider[columnHandles.size()];
         // TODO: total bytes here only includes records we iterate through, not total read from Kinesis.
         // This may not be an issue, but if total vs. completed is an important signal to Presto then
         // the implementation below could be a problem.  Need to investigate.
@@ -182,9 +177,7 @@ public class KinesisRecordSet
         private long totalBytes;
         private long totalMessages;
         private long lastReadTime;
-
         private String shardIterator;
-        private KinesisFieldValueProvider[] fieldValueProviders;
         private List<Record> kinesisRecords;
         private Iterator<Record> listIterator;
         private GetRecordsRequest getRecordsRequest;
@@ -316,16 +309,16 @@ public class KinesisRecordSet
 
             log.debug("Fetching %d bytes from current record. %d messages read so far", messageData.length, totalMessages);
 
-            Set<KinesisFieldValueProvider> fieldValueProviders = new HashSet<>();
+            Optional<Map<DecoderColumnHandle, FieldValueProvider>> decodedValue = messageDecoder.decodeRow(messageData, null);
 
-            // Note: older version of SDK used in Presto doesn't support getApproximateArrivalTimestamp so can't get message timestamp!
+/*            // Note: older version of SDK used in Presto doesn't support getApproximateArrivalTimestamp so can't get message timestamp!
             fieldValueProviders.addAll(globalInternalFieldValueProviders);
             fieldValueProviders.add(KinesisInternalFieldDescription.SEGMENT_COUNT_FIELD.forLongValue(totalMessages));
             fieldValueProviders.add(KinesisInternalFieldDescription.SHARD_SEQUENCE_ID_FIELD.forByteValue(currentRecord.getSequenceNumber().getBytes()));
             fieldValueProviders.add(KinesisInternalFieldDescription.MESSAGE_FIELD.forByteValue(messageData));
             fieldValueProviders.add(KinesisInternalFieldDescription.MESSAGE_LENGTH_FIELD.forLongValue(messageData.length));
             fieldValueProviders.add(KinesisInternalFieldDescription.MESSAGE_TIMESTAMP.forLongValue(currentRecord.getApproximateArrivalTimestamp().getTime()));
-            fieldValueProviders.add(KinesisInternalFieldDescription.MESSAGE_VALID_FIELD.forBooleanValue(messageDecoder.decodeRow(messageData, fieldValueProviders, columnHandles, messageFieldDecoders)));
+            fieldValueProviders.add(KinesisInternalFieldDescription.MESSAGE_VALID_FIELD.forBooleanValue(messageDecoder.decodeRow(messageData, null));
             fieldValueProviders.add(KinesisInternalFieldDescription.PARTITION_KEY_FIELD.forByteValue(partitionKey.getBytes()));
 
             this.fieldValueProviders = new KinesisFieldValueProvider[columnHandles.size()];
@@ -345,6 +338,47 @@ public class KinesisRecordSet
             }
 
             return true;
+        }*/
+
+            Map<ColumnHandle, FieldValueProvider> currentRowValuesMap = new HashMap<>();
+            for (DecoderColumnHandle columnHandle : columnHandles) {
+                if (columnHandle.isInternal()) {
+                    KinesisInternalFieldDescription fieldDescription = KinesisInternalFieldDescription.forColumnName(columnHandle.getName());
+                    switch (fieldDescription) {
+                        case SHARD_ID_FIELD:
+                            currentRowValuesMap.put(columnHandle, bytesValueProvider(split.getShardId().getBytes()));
+                            break;
+                        case SEGMENT_START_FIELD:
+                            currentRowValuesMap.put(columnHandle, bytesValueProvider(split.getStart().getBytes()));
+                            break;
+                        case SEGMENT_COUNT_FIELD:
+                            currentRowValuesMap.put(columnHandle, longValueProvider(totalMessages));
+                            break;
+                        case SHARD_SEQUENCE_ID_FIELD:
+                            currentRowValuesMap.put(columnHandle, bytesValueProvider(currentRecord.getSequenceNumber().getBytes()));
+                            break;
+                        case MESSAGE_FIELD:
+                            currentRowValuesMap.put(columnHandle, bytesValueProvider(messageData));
+                            break;
+                        case MESSAGE_LENGTH_FIELD:
+                            currentRowValuesMap.put(columnHandle, longValueProvider(messageData.length));
+                            break;
+                        case MESSAGE_VALID_FIELD:
+                            currentRowValuesMap.put(columnHandle, booleanValueProvider(!decodedValue.isPresent()));
+                            break;
+                        default:
+                            throw new IllegalArgumentException("unknown internal field " + fieldDescription);
+                    }
+                }
+            }
+
+            decodedValue.ifPresent(currentRowValuesMap::putAll);
+            for (int i = 0; i < columnHandles.size(); i++) {
+                ColumnHandle columnHandle = columnHandles.get(i);
+                currentRowValues[i] = currentRowValuesMap.get(columnHandle);
+            }
+
+            return true; // Advanced successfully.
         }
 
         /**
@@ -363,52 +397,45 @@ public class KinesisRecordSet
         @Override
         public boolean getBoolean(int field)
         {
-            checkArgument(field < columnHandles.size(), "Invalid field index");
-
-            checkFieldType(field, boolean.class);
-            return !isNull(field) && fieldValueProviders[field].getBoolean();
+            return getFieldValueProvider(field, boolean.class).getBoolean();
         }
 
         @Override
         public long getLong(int field)
         {
-            checkArgument(field < columnHandles.size(), "Invalid field index");
-
-            checkFieldType(field, long.class);
-            return isNull(field) ? 0L : fieldValueProviders[field].getLong();
+            return getFieldValueProvider(field, long.class).getLong();
         }
 
         @Override
         public double getDouble(int field)
         {
-            checkArgument(field < columnHandles.size(), "Invalid field index");
-
-            checkFieldType(field, double.class);
-            return isNull(field) ? 0.0d : fieldValueProviders[field].getDouble();
+            return getFieldValueProvider(field, double.class).getDouble();
         }
 
         @Override
         public Slice getSlice(int field)
         {
-            checkArgument(field < columnHandles.size(), "Invalid field index");
-
-            checkFieldType(field, Slice.class);
-            return isNull(field) ? Slices.EMPTY_SLICE : fieldValueProviders[field].getSlice();
+            return getFieldValueProvider(field, Slice.class).getSlice();
         }
 
         @Override
-        public Object getObject(int i)
+        public Object getObject(int field)
         {
-            // TODO: review if we want to support this
-            throw new UnsupportedOperationException();
+            return getFieldValueProvider(field, Block.class).getBlock();
         }
 
         @Override
         public boolean isNull(int field)
         {
             checkArgument(field < columnHandles.size(), "Invalid field index");
+            return currentRowValues[field] == null || currentRowValues[field].isNull();
+        }
 
-            return fieldValueProviders[field] == null || fieldValueProviders[field].isNull();
+        private FieldValueProvider getFieldValueProvider(int field, Class<?> expectedType)
+        {
+            checkArgument(field < columnHandles.size(), "Invalid field index");
+            checkFieldType(field, expectedType);
+            return currentRowValues[field];
         }
 
         @Override

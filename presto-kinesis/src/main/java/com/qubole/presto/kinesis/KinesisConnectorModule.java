@@ -22,7 +22,6 @@ import com.google.inject.Binder;
 import com.google.inject.Module;
 import com.google.inject.Scopes;
 import com.google.inject.multibindings.Multibinder;
-import com.qubole.presto.kinesis.decoder.KinesisDecoderModule;
 import com.qubole.presto.kinesis.s3config.S3TableConfigClient;
 
 import javax.inject.Inject;
@@ -55,7 +54,7 @@ public class KinesisConnectorModule
 
         binder.install(new DecoderModule());
 
-        for (KinesisInternalFieldDescription internalFieldDescription : KinesisInternalFieldDescription.getInternalFields()) {
+        for (KinesisInternalFieldDescription internalFieldDescription : KinesisInternalFieldDescription.values()) {
             bindInternalColumn(binder, internalFieldDescription);
         }
     }

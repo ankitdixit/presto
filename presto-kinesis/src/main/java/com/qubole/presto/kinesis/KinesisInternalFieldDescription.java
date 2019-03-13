@@ -19,66 +19,89 @@ import com.facebook.presto.spi.type.BooleanType;
 import com.facebook.presto.spi.type.TimestampType;
 import com.facebook.presto.spi.type.Type;
 import com.facebook.presto.spi.type.VarcharType;
-import com.google.common.collect.ImmutableSet;
-import io.airlift.slice.Slice;
-import io.airlift.slice.Slices;
 
-import java.util.Objects;
-import java.util.Set;
+import java.util.Map;
 
-import static com.google.common.base.MoreObjects.toStringHelper;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static com.google.common.collect.ImmutableMap.toImmutableMap;
+import static java.util.Arrays.stream;
 import static java.util.Objects.requireNonNull;
+import static java.util.function.Function.identity;
 
-public class KinesisInternalFieldDescription
+public enum KinesisInternalFieldDescription
 {
+/*
     public static final KinesisInternalFieldDescription SHARD_ID_FIELD = new KinesisInternalFieldDescription("_shard_id", VarcharType.VARCHAR, "Shard Id");
+*/
 
-    public static final KinesisInternalFieldDescription SHARD_SEQUENCE_ID_FIELD = new KinesisInternalFieldDescription("_shard_sequence_id", VarcharType.VARCHAR, "sequence id of message within the shard");
+    /**
+     * <tt>_partition_id</tt> - Kafka partition id.
+     */
+    SHARD_ID_FIELD("_shard_id", VarcharType.VARCHAR, "Shard Id"),
+    /**
+     * <tt>_partition_id</tt> - Kafka partition id.
+     */
+    SEGMENT_START_FIELD("_segment_start", VarcharType.VARCHAR, "Segment start sequence id"),
+    /**
+     * <tt>_partition_id</tt> - Kafka partition id.
+     */
+    SEGMENT_END_FIELD("_shard_sequence_id", VarcharType.VARCHAR, "Segment end sequence id"),
+    SHARD_SEQUENCE_ID_FIELD("_shard_sequence_id_field", BigintType.BIGINT, "Segment start offset"),
+    /**
+     * <tt>_partition_id</tt> - Kafka partition id.
+     */
+    SEGMENT_COUNT_FIELD("_segment_count", BigintType.BIGINT, "Running message count per segment"),
+    /**
+     * <tt>_partition_id</tt> - Kafka partition id.
+     */
+    MESSAGE_VALID_FIELD("_message_valid", BooleanType.BOOLEAN, "Message data is valid"),
+    /**
+     * <tt>_partition_id</tt> - Kafka partition id.
+     */
+    MESSAGE_FIELD("_message", VarcharType.VARCHAR, "Message text"),
+    /**
+     * <tt>_partition_id</tt> - Kafka partition id.
+     */
+    MESSAGE_TIMESTAMP("_message_timestamp", TimestampType.TIMESTAMP, "Approximate message arrival timestamp"),
+    /**
+     * <tt>_partition_id</tt> - Kafka partition id.
+     */
+    MESSAGE_LENGTH_FIELD("_message_length", BigintType.BIGINT, "Total number of message bytes"),
+    /**
+     * <tt>_partition_id</tt> - Kafka partition id.
+     */
+    PARTITION_KEY_FIELD("_partition_key", VarcharType.VARCHAR, "Key text");
 
-    public static final KinesisInternalFieldDescription SEGMENT_START_FIELD = new KinesisInternalFieldDescription("_segment_start", VarcharType.VARCHAR, "Segment start sequence id");
+    private static final Map<String, KinesisInternalFieldDescription> BY_COLUMN_NAME =
+            stream(KinesisInternalFieldDescription.values())
+                    .collect(toImmutableMap(KinesisInternalFieldDescription::getColumnName, identity()));
 
-    public static final KinesisInternalFieldDescription SEGMENT_END_FIELD = new KinesisInternalFieldDescription("_segment_end", VarcharType.VARCHAR, "Segment end sequence id");
-
-    public static final KinesisInternalFieldDescription SEGMENT_COUNT_FIELD = new KinesisInternalFieldDescription("_segment_count", BigintType.BIGINT, "Running message count per segment");
-
-    public static final KinesisInternalFieldDescription MESSAGE_VALID_FIELD = new KinesisInternalFieldDescription("_message_valid", BooleanType.BOOLEAN, "Message data is valid");
-
-    public static final KinesisInternalFieldDescription MESSAGE_FIELD = new KinesisInternalFieldDescription("_message", VarcharType.VARCHAR, "Message text");
-
-    public static final KinesisInternalFieldDescription MESSAGE_TIMESTAMP = new KinesisInternalFieldDescription("_message_timestamp", TimestampType.TIMESTAMP, "Approximate message arrival timestamp");
-
-    public static final KinesisInternalFieldDescription MESSAGE_LENGTH_FIELD = new KinesisInternalFieldDescription("_message_length", BigintType.BIGINT, "Total number of message bytes");
-
-    public static final KinesisInternalFieldDescription PARTITION_KEY_FIELD = new KinesisInternalFieldDescription("_partition_key", VarcharType.VARCHAR, "Key text");
-
-    public static Set<KinesisInternalFieldDescription> getInternalFields()
+    public static KinesisInternalFieldDescription forColumnName(String columnName)
     {
-        return ImmutableSet.of(SHARD_ID_FIELD, SHARD_SEQUENCE_ID_FIELD,
-                SEGMENT_START_FIELD, SEGMENT_END_FIELD, SEGMENT_COUNT_FIELD,
-                PARTITION_KEY_FIELD, MESSAGE_FIELD, MESSAGE_VALID_FIELD, MESSAGE_LENGTH_FIELD,
-                MESSAGE_TIMESTAMP);
+        KinesisInternalFieldDescription description = BY_COLUMN_NAME.get(columnName);
+        checkArgument(description != null, "Unknown internal column name %s", columnName);
+        return description;
     }
 
-    private final String name;
+    private final String columnName;
     private final Type type;
     private final String comment;
 
     KinesisInternalFieldDescription(
-            String name,
+            String columnName,
             Type type,
             String comment)
     {
-        checkArgument(!isNullOrEmpty(name), "name is null or is empty");
-        this.name = name;
+        checkArgument(!isNullOrEmpty(columnName), "name is null or is empty");
+        this.columnName = columnName;
         this.type = requireNonNull(type, "type is null");
         this.comment = requireNonNull(comment, "comment is null");
     }
 
-    public String getName()
+    public String getColumnName()
     {
-        return name;
+        return columnName;
     }
 
     public Type getType()
@@ -90,149 +113,17 @@ public class KinesisInternalFieldDescription
     {
         return new KinesisColumnHandle(connectorId,
                 index,
-                getName(),
+                getColumnName(),
                 getType(),
                 null,
                 null,
                 null,
-                hidden,
-                true);
+                false,
+                hidden);
     }
 
     ColumnMetadata getColumnMetadata(boolean hidden)
     {
-        return new ColumnMetadata(name, type, comment, hidden);
-    }
-
-    public KinesisFieldValueProvider forBooleanValue(boolean value)
-    {
-        return new BooleanKinesisFieldValueProvider(value);
-    }
-
-    public KinesisFieldValueProvider forLongValue(long value)
-    {
-        return new LongKinesisFieldValueProvider(value);
-    }
-
-    public KinesisFieldValueProvider forByteValue(byte[] value)
-    {
-        return new BytesKinesisFieldValueProvider(value);
-    }
-
-    @Override
-    public int hashCode()
-    {
-        return Objects.hash(name, type);
-    }
-
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-
-        KinesisInternalFieldDescription other = (KinesisInternalFieldDescription) obj;
-        return Objects.equals(this.name, other.name) &&
-                Objects.equals(this.type, other.type);
-    }
-
-    @Override
-    public String toString()
-    {
-        return toStringHelper(this)
-                .add("name", name)
-                .add("type", type)
-                .toString();
-    }
-
-    public class BooleanKinesisFieldValueProvider
-            extends KinesisFieldValueProvider
-    {
-        private final boolean value;
-
-        private BooleanKinesisFieldValueProvider(boolean value)
-        {
-            this.value = value;
-        }
-
-        @Override
-        public boolean accept(KinesisColumnHandle columnHandle)
-        {
-            return columnHandle.getName().equals(name);
-        }
-
-        @Override
-        public boolean getBoolean()
-        {
-            return value;
-        }
-
-        @Override
-        public boolean isNull()
-        {
-            return false;
-        }
-    }
-
-    public class LongKinesisFieldValueProvider
-            extends KinesisFieldValueProvider
-    {
-        private final long value;
-
-        private LongKinesisFieldValueProvider(long value)
-        {
-            this.value = value;
-        }
-
-        @Override
-        public boolean accept(KinesisColumnHandle columnHandle)
-        {
-            return columnHandle.getName().equals(name);
-        }
-
-        @Override
-        public long getLong()
-        {
-            return value;
-        }
-
-        @Override
-        public boolean isNull()
-        {
-            return false;
-        }
-    }
-
-    public class BytesKinesisFieldValueProvider
-            extends KinesisFieldValueProvider
-    {
-        private final byte[] value;
-
-        private BytesKinesisFieldValueProvider(byte[] value)
-        {
-            this.value = value;
-        }
-
-        @Override
-        public boolean accept(KinesisColumnHandle columnHandle)
-        {
-            return columnHandle.getName().equals(name);
-        }
-
-        @Override
-        public Slice getSlice()
-        {
-            return isNull() ? Slices.EMPTY_SLICE : Slices.wrappedBuffer(value);
-        }
-
-        @Override
-        public boolean isNull()
-        {
-            return value == null || value.length == 0;
-        }
+        return new ColumnMetadata(columnName, type, comment, hidden);
     }
 }

@@ -13,6 +13,7 @@
  */
 package com.qubole.presto.kinesis;
 
+import com.facebook.presto.decoder.dummy.DummyRowDecoder;
 import com.facebook.presto.spi.ColumnHandle;
 import com.facebook.presto.spi.ColumnMetadata;
 import com.facebook.presto.spi.ConnectorSession;
@@ -32,7 +33,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
-import com.qubole.presto.kinesis.decoder.dummy.DummyKinesisRowDecoder;
 import io.airlift.log.Logger;
 
 import java.util.List;
@@ -166,7 +166,7 @@ public class KinesisMetadata
         }
 
         for (KinesisInternalFieldDescription kinesisInternalFieldDescription : internalFieldDescriptions) {
-            columnHandles.put(kinesisInternalFieldDescription.getName(), kinesisInternalFieldDescription.getColumnHandle(connectorId, index++, kinesisConnectorConfig.isHideInternalColumns()));
+            columnHandles.put(kinesisInternalFieldDescription.getColumnName(), kinesisInternalFieldDescription.getColumnHandle(connectorId, index++, kinesisConnectorConfig.isHideInternalColumns()));
         }
 
         return columnHandles.build();
@@ -209,7 +209,7 @@ public class KinesisMetadata
 
     private static String getDataFormat(KinesisStreamFieldGroup fieldGroup)
     {
-        return (fieldGroup == null) ? DummyKinesisRowDecoder.NAME : fieldGroup.getDataFormat();
+        return (fieldGroup == null) ? DummyRowDecoder.NAME : fieldGroup.getDataFormat();
     }
 
     @VisibleForTesting
