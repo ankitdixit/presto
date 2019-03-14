@@ -35,9 +35,6 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
-/**
- * Created by derekbennett on 6/27/16.
- */
 @Test(singleThreaded = true)
 public class TestS3TableConfigClient
 {

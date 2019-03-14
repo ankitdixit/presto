@@ -20,8 +20,6 @@ import com.amazonaws.services.s3.AmazonS3Client;
 
 /**
  * Interface to a client manager that provides the AWS clients needed.
- * <p>
- * Created by derekbennett on 6/20/16.
  */
 public interface KinesisClientProvider
 {

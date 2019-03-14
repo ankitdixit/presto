@@ -20,7 +20,6 @@ import com.facebook.presto.spi.connector.ConnectorTransactionHandle;
 import com.facebook.presto.testing.TestingConnectorContext;
 import com.google.common.collect.ImmutableMap;
 import com.qubole.presto.kinesis.util.TestUtils;
-import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
 import java.util.ArrayList;
@@ -58,10 +57,6 @@ public class TestKinesisPlugin
         return factory;
     }
 
-/*    @Parameters({
-            "kinesis.awsAccessKey",
-            "kinesis.awsSecretKey"
-    })*/
     @Test
     public void testSpinUp(/*String awsAccessKey, String awsSecretKey*/)
     {

@@ -33,7 +33,6 @@ import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
-import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
 import java.nio.ByteBuffer;
@@ -75,10 +74,6 @@ public class TestMinimalFunctionality
     private String streamName;
     private StandaloneQueryRunner queryRunner;
 
-    /*@Parameters({
-            "kinesis.awsAccessKey",
-            "kinesis.awsSecretKey"
-    })*/
     @BeforeClass
     public void start(/*String accessKey, String secretKey*/)
             throws Exception
@@ -93,10 +88,6 @@ public class TestMinimalFunctionality
         embeddedKinesisStream.close();
     }
 
-    /*@Parameters({
-            "kinesis.awsAccessKey",
-            "kinesis.awsSecretKey"
-    })*/
     @BeforeMethod
     public void spinUp(/*String accessKey, String secretKey*/)
             throws Exception

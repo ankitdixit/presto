@@ -22,7 +22,6 @@ public class KinesisAwsCredentials
     private String accessKeyId;
     private String secretKey;
 
-    @Inject
     public KinesisAwsCredentials(String accessKeyId, String secretKey)
     {
         this.accessKeyId = accessKeyId;

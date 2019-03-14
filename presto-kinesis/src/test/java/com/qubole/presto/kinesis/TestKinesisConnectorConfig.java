@@ -16,7 +16,6 @@ package com.qubole.presto.kinesis;
 import com.google.common.collect.ImmutableMap;
 import io.airlift.configuration.testing.ConfigAssertions;
 import io.airlift.units.Duration;
-import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
 import java.util.Map;
@@ -24,10 +23,6 @@ import java.util.concurrent.TimeUnit;
 
 public class TestKinesisConnectorConfig
 {
-    /*@Parameters({
-            "kinesis.awsAccessKey",
-            "kinesis.awsSecretKey"
-    })*/
     @Test
     public void testDefaults(/*String accessKey, String secretKey*/)
     {

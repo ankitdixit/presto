@@ -26,8 +26,6 @@ import java.util.TimeZone;
  * <p>
  * Note that we default these properties to what is in the configuration,
  * so there should always be a value.
- * <p>
- * Created by derekbennett on 6/23/16.
  */
 public class SessionVariables
 {
