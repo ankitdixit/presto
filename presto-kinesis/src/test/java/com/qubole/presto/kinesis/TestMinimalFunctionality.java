@@ -19,6 +19,7 @@ import com.facebook.presto.Session;
 import com.facebook.presto.metadata.QualifiedObjectName;
 import com.facebook.presto.metadata.SessionPropertyManager;
 import com.facebook.presto.metadata.TableHandle;
+import com.facebook.presto.spi.QueryId;
 import com.facebook.presto.spi.SchemaTableName;
 import com.facebook.presto.spi.security.Identity;
 import com.facebook.presto.spi.type.BigintType;
@@ -57,6 +58,8 @@ import static org.testng.Assert.assertTrue;
 public class TestMinimalFunctionality
 {
     private static final Logger log = Logger.get(TestMinimalFunctionality.class);
+    private static final String ACCESS_KEY = "kinesis.awsAccessKey";
+    private static final String SECRET_KEY = "kinesis.awsSecretKey";
 
     private static final Session SESSION = Session.builder(new SessionPropertyManager())
             .setIdentity(new Identity("user", Optional.empty()))
@@ -65,21 +68,22 @@ public class TestMinimalFunctionality
             .setSchema("default")
             .setTimeZoneKey(UTC_KEY)
             .setLocale(ENGLISH)
+            .setQueryId(new QueryId("dummy"))
             .build();
 
     private EmbeddedKinesisStream embeddedKinesisStream;
     private String streamName;
     private StandaloneQueryRunner queryRunner;
 
-    @Parameters({
+    /*@Parameters({
             "kinesis.awsAccessKey",
             "kinesis.awsSecretKey"
-    })
+    })*/
     @BeforeClass
-    public void start(String accessKey, String secretKey)
+    public void start(/*String accessKey, String secretKey*/)
             throws Exception
     {
-        embeddedKinesisStream = new EmbeddedKinesisStream(TestUtils.noneToBlank(accessKey), TestUtils.noneToBlank(secretKey));
+        embeddedKinesisStream = new EmbeddedKinesisStream(TestUtils.noneToBlank(ACCESS_KEY), TestUtils.noneToBlank(SECRET_KEY));
     }
 
     @AfterClass
@@ -89,12 +93,12 @@ public class TestMinimalFunctionality
         embeddedKinesisStream.close();
     }
 
-    @Parameters({
+    /*@Parameters({
             "kinesis.awsAccessKey",
             "kinesis.awsSecretKey"
-    })
+    })*/
     @BeforeMethod
-    public void spinUp(String accessKey, String secretKey)
+    public void spinUp(/*String accessKey, String secretKey*/)
             throws Exception
     {
         streamName = "test_" + UUID.randomUUID().toString().replaceAll("-", "_");
@@ -103,7 +107,7 @@ public class TestMinimalFunctionality
         TestUtils.installKinesisPlugin(queryRunner, ImmutableMap.<SchemaTableName, KinesisStreamDescription>builder()
                         .put(TestUtils.createEmptyStreamDescription(streamName, new SchemaTableName("default", streamName)))
                         .build(),
-                TestUtils.noneToBlank(accessKey), TestUtils.noneToBlank(secretKey));
+                TestUtils.noneToBlank(ACCESS_KEY), TestUtils.noneToBlank(SECRET_KEY));
     }
 
     private void createMessages(String streamName, int count)

@@ -58,21 +58,23 @@ public class TestKinesisPlugin
         return factory;
     }
 
-    @Parameters({
+/*    @Parameters({
             "kinesis.awsAccessKey",
             "kinesis.awsSecretKey"
-    })
+    })*/
     @Test
-    public void testSpinUp(String awsAccessKey, String awsSecretKey)
+    public void testSpinUp(/*String awsAccessKey, String awsSecretKey*/)
     {
+        String accessKey = "kinesis.accessKey";
+        String secretKey = "kinesis.secretKey";
         ConnectorFactory factory = testConnectorExists();
         // Important: this has to be created before we setup the injector in the factory:
         assertNotNull(factory.getHandleResolver());
 
         Connector c = factory.create("kinesis.test-connector", ImmutableMap.<String, String>builder()
                 .put("kinesis.hide-internal-columns", "false")
-                .put("kinesis.access-key", TestUtils.noneToBlank(awsAccessKey))
-                .put("kinesis.secret-key", TestUtils.noneToBlank(awsSecretKey))
+                .put("kinesis.access-key", TestUtils.noneToBlank(accessKey))
+                .put("kinesis.secret-key", TestUtils.noneToBlank(secretKey))
                 .build(), new TestingConnectorContext() {});
         assertNotNull(c);
 

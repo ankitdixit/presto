@@ -24,12 +24,12 @@ import java.util.concurrent.TimeUnit;
 
 public class TestKinesisConnectorConfig
 {
-    @Parameters({
+    /*@Parameters({
             "kinesis.awsAccessKey",
             "kinesis.awsSecretKey"
-    })
+    })*/
     @Test
-    public void testDefaults(String accessKey, String secretKey)
+    public void testDefaults(/*String accessKey, String secretKey*/)
     {
         ConfigAssertions.assertRecordedDefaults(ConfigAssertions.recordDefaults(KinesisConnectorConfig.class)
                 .setDefaultSchema("default")
@@ -54,13 +54,15 @@ public class TestKinesisConnectorConfig
                 .setIterationNumber(0));
     }
 
-    @Parameters({
+    /*@Parameters({
             "kinesis.awsAccessKey",
             "kinesis.awsSecretKey"
-    })
+    })*/
     @Test
-    public void testExplicitPropertyMappings(String accessKey, String secretKey)
+    public void testExplicitPropertyMappings(/*String accessKey, String secretKey*/)
     {
+        String accessKey = "kinesis.accessKey";
+        String secretKey = "kinesis.secretKey";
         Map<String, String> properties = new ImmutableMap.Builder<String, String>()
                 .put("kinesis.table-description-dir", "/var/lib/kinesis")
                 .put("kinesis.table-descriptions-s3", "s3://bucket.name/folder.name")
